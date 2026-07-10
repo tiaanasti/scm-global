@@ -19,3 +19,12 @@ Route::get('/kurs', [DashboardController::class, 'currencies'])
 
 Route::get('/berita', [DashboardController::class, 'news'])
     ->name('news.index');
+
+Route::get('/perbandingan', [DashboardController::class, 'comparisons'])
+    ->name('comparisons.index');
+
+Route::get('/watchlist', [DashboardController::class, 'watchlists'])
+    ->name('watchlists.index');
+
+Route::get('/admin', [DashboardController::class, 'admin'])
+    ->name('admin.index');

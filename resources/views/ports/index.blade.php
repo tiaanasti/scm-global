@@ -58,19 +58,19 @@
     <span>Berita</span>
 </a>
 
-<a href="#" class="nav-link-custom">
+<a href="{{ route('comparisons.index') }}" class="nav-link-custom {{ request()->routeIs('comparisons.index') ? 'active' : '' }}">
     <i class="bi bi-bar-chart-line"></i>
-    Perbandingan
+    <span>Perbandingan</span>
 </a>
 
-<a href="#" class="nav-link-custom">
+<a href="{{ route('watchlists.index') }}" class="nav-link-custom {{ request()->routeIs('watchlists.index') ? 'active' : '' }}">
     <i class="bi bi-star"></i>
-    Watchlist
+    <span>Watchlist</span>
 </a>
 
-<a href="#" class="nav-link-custom">
+<a href="{{ route('admin.index') }}" class="nav-link-custom {{ request()->routeIs('admin.index') ? 'active' : '' }}">
     <i class="bi bi-person-gear"></i>
-    Admin
+    <span>Admin</span>
 </a>
 
         <div class="sidebar-user">
