@@ -16,71 +16,11 @@
 <body>
 <div class="app">
     <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-icon">
-                <i class="bi bi-box-seam"></i>
-            </div>
-            <div>
-                Supply Chain<br>Management
-            </div>
-        </div>
+    <body>
+<div class="app">
 
-        <a href="{{ route('dashboard') }}" class="nav-link-custom {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="bi bi-house-door-fill"></i>
-            <span>Dashboard</span>
-        </a>
+    @include('partials.sidebar')
 
-        <a href="{{ route('countries.index') }}" class="nav-link-custom {{ request()->routeIs('countries.index') ? 'active' : '' }}">
-            <i class="bi bi-globe2"></i>
-            <span>Negara</span>
-        </a>
-
-        <a href="{{ route('risks.index') }}" class="nav-link-custom {{ request()->routeIs('risks.index') ? 'active' : '' }}">
-            <i class="bi bi-shield-check"></i>
-            <span>Risiko</span>
-        </a>
-
-        <a href="{{ route('ports.index') }}" class="nav-link-custom {{ request()->routeIs('ports.index') ? 'active' : '' }}">
-            <i class="bi bi-pin-map-fill"></i>
-            <span>Pelabuhan</span>
-        </a>
-
-        <a href="{{ route('currencies.index') }}" class="nav-link-custom {{ request()->routeIs('currencies.index') ? 'active' : '' }}">
-            <i class="bi bi-currency-dollar"></i>
-            <span>Kurs</span>
-        </a>
-
-        <a href="{{ route('news.index') }}" class="nav-link-custom {{ request()->routeIs('news.index') ? 'active' : '' }}">
-            <i class="bi bi-newspaper"></i>
-            <span>Berita</span>
-        </a>
-
-        <a href="{{ route('comparisons.index') }}" class="nav-link-custom {{ request()->routeIs('comparisons.index') ? 'active' : '' }}">
-            <i class="bi bi-bar-chart-line"></i>
-            <span>Perbandingan</span>
-        </a>
-
-        <a href="{{ route('watchlists.index') }}" class="nav-link-custom {{ request()->routeIs('watchlists.index') ? 'active' : '' }}">
-    <i class="bi bi-star"></i>
-    <span>Watchlist</span>
-</a>
-
-        <a href="{{ route('admin.index') }}" class="nav-link-custom {{ request()->routeIs('admin.index') ? 'active' : '' }}">
-    <i class="bi bi-person-gear"></i>
-    <span>Admin</span>
-</a>
-
-        <div class="sidebar-user">
-            <div class="user-avatar">
-                <i class="bi bi-person-fill"></i>
-            </div>
-            <div>
-                <div style="font-weight: 700;">Admin</div>
-                <div style="font-size: 13px; color: #bfdbfe;">Administrator</div>
-            </div>
-        </div>
-    </aside>
 
     <!-- MAIN -->
     <main class="main">
@@ -92,6 +32,56 @@
         </div>
 
         <div class="content">
+            @if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if ($errors->any())
+    <div class="alert alert-danger">
+        {{ $errors->first() }}
+    </div>
+@endif
+<div class="card-clean mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="section-title mb-1">Tambah Negara ke Watchlist</div>
+            <div class="metric-sub">
+                Pilih negara yang ingin dipantau secara berkala.
+            </div>
+        </div>
+    </div>
+
+    <form action="{{ route('watchlists.store') }}" method="POST" class="row g-3">
+        @csrf
+
+        <div class="col-lg-9">
+            <select name="country_id" class="form-select country-select" required>
+                <option value="">Pilih negara</option>
+
+                @foreach ($availableCountries as $country)
+                    <option value="{{ $country->id }}">
+                        {{ $country->name }} - {{ $country->region }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="col-lg-3">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-plus-circle"></i>
+                Tambah Watchlist
+            </button>
+        </div>
+    </form>
+
+    @if ($availableCountries->count() === 0)
+        <div class="metric-sub mt-3">
+            Semua negara sudah masuk ke dalam watchlist.
+        </div>
+    @endif
+</div>
             <!-- SUMMARY CARDS -->
             <div class="row g-3 mb-4">
                 <div class="col-lg-3 col-md-6">
@@ -165,6 +155,7 @@
                             <th>Skor Risiko</th>
                             <th>Status</th>
                             <th>Mulai Dipantau</th>
+                            <th>Aksi</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -197,10 +188,21 @@
                                 <td>
                                     {{ \Carbon\Carbon::parse($item->created_at)->format('d M Y') }}
                                 </td>
+                                <td>
+    <form action="{{ route('watchlists.destroy', $item->watchlist_id) }}" method="POST" onsubmit="return confirm('Hapus negara ini dari watchlist?')">
+        @csrf
+        @method('DELETE')
+
+        <button type="submit" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash"></i>
+            Hapus
+        </button>
+    </form>
+</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-muted">
+                                <td colspan="8" class="text-muted">
                                     Belum ada negara dalam daftar pantauan.
                                 </td>
                             </tr>

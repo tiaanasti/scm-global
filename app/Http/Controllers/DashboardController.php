@@ -543,7 +543,7 @@ class DashboardController extends Controller
         'recommendation'
     ));
     }
-    public function watchlists(Request $request)
+public function watchlists(Request $request)
 {
     $adminUser = DB::table('users')
         ->where('email', 'admin@supplyrisk.test')
@@ -577,6 +577,15 @@ class DashboardController extends Controller
         ->orderByDesc('risk_scores.total_score')
         ->get();
 
+    $watchlistedCountryIds = $watchlistRows
+        ->pluck('country_id')
+        ->toArray();
+
+    $availableCountries = DB::table('countries')
+        ->whereNotIn('id', $watchlistedCountryIds)
+        ->orderBy('name')
+        ->get();
+
     $summary = [
         'total_watchlist' => $watchlistRows->count(),
         'high_risk' => $watchlistRows->where('total_score', '>=', 60)->count(),
@@ -586,9 +595,50 @@ class DashboardController extends Controller
 
     return view('watchlists.index', compact(
         'watchlistRows',
+        'availableCountries',
         'summary'
     ));
+}
+    public function storeWatchlist(Request $request)
+{
+    $request->validate([
+        'country_id' => 'required|exists:countries,id',
+    ]);
+
+    $adminUser = DB::table('users')
+        ->where('email', 'admin@supplyrisk.test')
+        ->first();
+
+    $userId = $adminUser->id ?? 1;
+
+    $exists = DB::table('watchlists')
+        ->where('user_id', $userId)
+        ->where('country_id', $request->country_id)
+        ->exists();
+
+    if (!$exists) {
+        DB::table('watchlists')->insert([
+            'user_id' => $userId,
+            'country_id' => $request->country_id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
+
+    return redirect()
+        ->route('watchlists.index')
+        ->with('success', 'Negara berhasil ditambahkan ke watchlist.');
+}
+    public function destroyWatchlist($id)
+{
+    DB::table('watchlists')
+        ->where('id', $id)
+        ->delete();
+
+    return redirect()
+        ->route('watchlists.index')
+        ->with('success', 'Negara berhasil dihapus dari watchlist.');
+}
     public function admin()
 {
     $summary = [
@@ -670,6 +720,202 @@ class DashboardController extends Controller
         'positiveWords',
         'negativeWords'
     ));
-}
+    }
+    public function reports()
+{
+    $summary = [
+        'countries_count' => DB::table('countries')->count(),
+        'ports_count' => DB::table('ports')->count(),
+        'news_count' => DB::table('news_cache')->count(),
+        'watchlists_count' => DB::table('watchlists')->count(),
+        'high_risk_count' => DB::table('risk_scores')->where('total_score', '>=', 60)->count(),
+        'medium_risk_count' => DB::table('risk_scores')->whereBetween('total_score', [35, 59])->count(),
+        'low_risk_count' => DB::table('risk_scores')->where('total_score', '<', 35)->count(),
+    ];
 
+    $riskRows = DB::table('risk_scores')
+        ->join('countries', 'risk_scores.country_id', '=', 'countries.id')
+        ->select(
+            'countries.name as country_name',
+            'countries.region',
+            'risk_scores.weather_score',
+            'risk_scores.inflation_score',
+            'risk_scores.currency_score',
+            'risk_scores.news_score',
+            'risk_scores.total_score',
+            'risk_scores.risk_level',
+            'risk_scores.recommendation'
+        )
+        ->orderByDesc('risk_scores.total_score')
+        ->get();
+
+    $currencyRows = DB::table('currency_rates')
+        ->join('countries', 'currency_rates.country_id', '=', 'countries.id')
+        ->select(
+            'countries.name as country_name',
+            'currency_rates.base_currency',
+            'currency_rates.target_currency',
+            'currency_rates.exchange_rate',
+            'currency_rates.change_percentage',
+            'currency_rates.currency_risk_score'
+        )
+        ->orderByDesc('currency_rates.currency_risk_score')
+        ->get();
+
+    $portRows = DB::table('ports')
+        ->leftJoin('countries', 'ports.country_id', '=', 'countries.id')
+        ->select(
+            'ports.name',
+            'ports.city',
+            'ports.status',
+            'ports.port_risk_score',
+            'countries.name as country_name'
+        )
+        ->orderByDesc('ports.port_risk_score')
+        ->get();
+
+    $newsRows = DB::table('news_cache')
+        ->leftJoin('countries', 'news_cache.country_id', '=', 'countries.id')
+        ->select(
+            'news_cache.title',
+            'news_cache.category',
+            'news_cache.sentiment',
+            'news_cache.positive_score',
+            'news_cache.negative_score',
+            'countries.name as country_name'
+        )
+        ->latest('news_cache.published_at')
+        ->get();
+
+    $highestRisk = $riskRows->first();
+
+    $lowestRisk = $riskRows
+        ->sortBy('total_score')
+        ->first();
+
+    return view('reports.index', compact(
+        'summary',
+        'riskRows',
+        'currencyRows',
+        'portRows',
+        'newsRows',
+        'highestRisk',
+        'lowestRisk'
+    ));
+    }
+    public function storeCountry(Request $request)
+{
+    $request->validate([
+        'country_code' => 'required|string|max:10|unique:countries,country_code',
+        'name' => 'required|string|max:255',
+        'capital' => 'nullable|string|max:255',
+        'region' => 'nullable|string|max:255',
+        'currency_code' => 'required|string|max:10',
+        'currency_name' => 'nullable|string|max:255',
+        'language' => 'nullable|string|max:255',
+        'latitude' => 'nullable|numeric',
+        'longitude' => 'nullable|numeric',
+        'exchange_rate' => 'nullable|numeric',
+    ]);
+
+    DB::transaction(function () use ($request) {
+        $now = now();
+
+        $countryId = DB::table('countries')->insertGetId([
+            'country_code' => strtoupper($request->country_code),
+            'name' => $request->name,
+            'capital' => $request->capital,
+            'region' => $request->region,
+            'currency_code' => strtoupper($request->currency_code),
+            'currency_name' => $request->currency_name,
+            'language' => $request->language,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        DB::table('economic_indicators')->insert([
+            'country_id' => $countryId,
+            'year' => 2024,
+            'gdp' => 1000000000000,
+            'inflation_rate' => 3.0,
+            'population' => 50000000,
+            'exports' => 200000000000,
+            'imports' => 180000000000,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        DB::table('weather_reports')->insert([
+            'country_id' => $countryId,
+            'temperature' => 27,
+            'rainfall' => 8,
+            'wind_speed' => 12,
+            'weather_status' => 'Berawan',
+            'weather_risk_score' => 35,
+            'reported_at' => $now,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        DB::table('currency_rates')->insert([
+            'country_id' => $countryId,
+            'base_currency' => 'USD',
+            'target_currency' => strtoupper($request->currency_code),
+            'exchange_rate' => $request->exchange_rate ?? 1,
+            'change_percentage' => 0.25,
+            'currency_risk_score' => 35,
+            'rate_date' => now()->toDateString(),
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        DB::table('risk_scores')->insert([
+            'country_id' => $countryId,
+            'weather_score' => 35,
+            'inflation_score' => 30,
+            'currency_score' => 35,
+            'news_score' => 25,
+            'total_score' => 35,
+            'risk_level' => 'Risiko Sedang',
+            'recommendation' => 'Negara ini baru ditambahkan ke sistem. Data awal masih bersifat default dan perlu diperbarui melalui API atau input admin.',
+            'score_date' => now()->toDateString(),
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        DB::table('ports')->insert([
+            'country_id' => $countryId,
+            'name' => 'Main Port of ' . $request->name,
+            'city' => $request->capital,
+            'country_name' => $request->name,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'status' => 'Aman',
+            'port_risk_score' => 30,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        DB::table('news_cache')->insert([
+            'country_id' => $countryId,
+            'title' => 'Data awal negara ' . $request->name . ' berhasil ditambahkan',
+            'description' => 'Negara ini baru ditambahkan ke sistem monitoring rantai pasok dan siap dipantau melalui dashboard.',
+            'source' => 'System Demo',
+            'url' => '#',
+            'category' => 'Sistem',
+            'sentiment' => 'Neutral',
+            'positive_score' => 1,
+            'negative_score' => 1,
+            'published_at' => $now,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+    });
+
+    return redirect()
+        ->route('admin.index')
+        ->with('success', 'Negara baru berhasil ditambahkan ke sistem.');
+    }
 }

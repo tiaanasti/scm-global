@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ApiController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -25,6 +26,24 @@ Route::get('/perbandingan', [DashboardController::class, 'comparisons'])
 
 Route::get('/watchlist', [DashboardController::class, 'watchlists'])
     ->name('watchlists.index');
+Route::post('/watchlist', [DashboardController::class, 'storeWatchlist'])
+    ->name('watchlists.store');
+Route::delete('/watchlist/{id}', [DashboardController::class, 'destroyWatchlist'])
+    ->name('watchlists.destroy');
 
 Route::get('/admin', [DashboardController::class, 'admin'])
     ->name('admin.index');
+Route::post('/admin/countries', [DashboardController::class, 'storeCountry'])
+    ->name('admin.countries.store');
+
+Route::prefix('api')->group(function () {
+    Route::get('/countries', [ApiController::class, 'countries']);
+    Route::get('/risk', [ApiController::class, 'risk']);
+    Route::get('/ports', [ApiController::class, 'ports']);
+    Route::get('/news', [ApiController::class, 'news']);
+    Route::get('/currency', [ApiController::class, 'currency']);
+    Route::get('/summary', [ApiController::class, 'summary']);
+});
+
+Route::get('/laporan', [DashboardController::class, 'reports'])
+    ->name('reports.index');

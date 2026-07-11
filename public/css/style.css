@@ -459,4 +459,14 @@ body {
     .country-select {
         min-width: 100%;
     }
+
+    .indicator-red {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+.indicator-red .metric-value {
+    color: #991b1b;
+}
+
 }

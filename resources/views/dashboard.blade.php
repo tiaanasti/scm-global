@@ -7,85 +7,21 @@
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    
     <!-- Leaflet Map -->
     <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
 
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    
 
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ time() }}">
 </head>
 
 <body>
 <div class="app">
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-icon">
-                <i class="bi bi-box-seam"></i>
-            </div>
-            <div>
-                Supply Chain<br>Management
-            </div>
-        </div>
 
-       <a href="{{ route('dashboard') }}" class="nav-link-custom active">
-    <i class="bi bi-house-door-fill"></i>
-    Dashboard
-</a>
-
-<a href="{{ route('countries.index') }}" class="nav-link-custom">
-    <i class="bi bi-globe2"></i>
-    Negara
-</a>
-
-<a href="{{ route('risks.index') }}" class="nav-link-custom">
-    <i class="bi bi-shield-check"></i>
-    Risiko
-</a>
-
-<a href="{{ route('ports.index') }}" class="nav-link-custom">
-    <i class="bi bi-pin-map-fill"></i>
-    Pelabuhan
-</a>
-
-<a href="{{ route('currencies.index') }}" class="nav-link-custom {{ request()->routeIs('currencies.index') ? 'active' : '' }}">
-    <i class="bi bi-currency-dollar"></i>
-    <span>Kurs</span>
-</a>
-
-<a href="{{ route('news.index') }}" class="nav-link-custom {{ request()->routeIs('news.index') ? 'active' : '' }}">
-    <i class="bi bi-newspaper"></i>
-    <span>Berita</span>
-</a>
-
-<a href="{{ route('comparisons.index') }}" class="nav-link-custom {{ request()->routeIs('comparisons.index') ? 'active' : '' }}">
-    <i class="bi bi-bar-chart-line"></i>
-    <span>Perbandingan</span>
-</a>
-
-<a href="{{ route('watchlists.index') }}" class="nav-link-custom {{ request()->routeIs('watchlists.index') ? 'active' : '' }}">
-    <i class="bi bi-star"></i>
-    <span>Watchlist</span>
-</a>
-
-<a href="{{ route('admin.index') }}" class="nav-link-custom {{ request()->routeIs('admin.index') ? 'active' : '' }}">
-    <i class="bi bi-person-gear"></i>
-    <span>Admin</span>
-</a>
-
-        <div class="sidebar-user">
-            <div class="user-avatar">
-                <i class="bi bi-person-fill"></i>
-            </div>
-            <div>
-                <div style="font-weight: 700;">Admin</div>
-                <div style="font-size: 13px; color: #bfdbfe;">Administrator</div>
-            </div>
-        </div>
-    </aside>
+    @include('partials.sidebar')
 
     <!-- MAIN CONTENT -->
     <main class="main">
@@ -107,6 +43,79 @@
         </div>
 
         <div class="content">
+            <!-- LIVE API DATA -->
+            <div class="card-clean mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <div class="section-title mb-1">Live Data dari REST API</div>
+                        <div class="metric-sub">
+                            Data ini dimuat menggunakan JavaScript Fetch API dari endpoint /api/summary dan /api/risk.
+                        </div>
+                    </div>
+
+                    <span class="risk-badge risk-low" id="apiStatus">
+                        Loading API...
+                    </span>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="indicator-box indicator-blue">
+                            <div class="metric-label">Total Negara</div>
+                            <div class="metric-value" id="apiCountriesCount">-</div>
+                            <div class="metric-sub">Dari /api/summary</div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="indicator-box indicator-green">
+                            <div class="metric-label">Total Pelabuhan</div>
+                            <div class="metric-value" id="apiPortsCount">-</div>
+                            <div class="metric-sub">Dari /api/summary</div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="indicator-box indicator-orange">
+                            <div class="metric-label">Risiko Tinggi</div>
+                            <div class="metric-value" id="apiHighRiskCount">-</div>
+                            <div class="metric-sub">Negara risiko tinggi</div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="indicator-box indicator-red">
+                            <div class="metric-label">Berita Negatif</div>
+                            <div class="metric-value" id="apiNegativeNewsCount">-</div>
+                            <div class="metric-sub">Sinyal risiko berita</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">Ranking Risiko dari API</div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Negara</th>
+                            <th>Cuaca</th>
+                            <th>Inflasi</th>
+                            <th>Kurs</th>
+                            <th>Berita</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="apiRiskTable">
+                        <tr>
+                            <td colspan="7" class="text-muted">Memuat data dari API...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- METRICS -->
             <div class="row g-3 mb-4">
                 <div class="col-xl col-md-4 col-sm-6">
@@ -196,6 +205,7 @@
                                 <option>12 Bulan Terakhir</option>
                             </select>
                         </div>
+
                         <canvas id="trendChart" height="135"></canvas>
                     </div>
                 </div>
@@ -207,6 +217,7 @@
                         <div class="row align-items-center">
                             <div class="col-md-6">
                                 <canvas id="riskChart" height="190"></canvas>
+
                                 <div class="risk-score-box mt-2">
                                     <div class="risk-number">{{ $risk->total_score ?? 0 }}</div>
                                     <div style="color: #64748b;">/100</div>
@@ -327,7 +338,7 @@
                         <div class="section-title">Berita Terbaru</div>
 
                         @forelse ($news as $item)
-                            <div class="news-item">
+                            <div class="news-item d-flex gap-3">
                                 <div class="news-icon">
                                     @if ($item->category === 'Logistik')
                                         <i class="bi bi-cloud-rain"></i>
@@ -337,14 +348,17 @@
                                         <i class="bi bi-newspaper"></i>
                                     @endif
                                 </div>
+
                                 <div>
                                     <div class="d-flex align-items-center gap-2 mb-1">
                                         <span class="badge-soft
                                             {{ $item->sentiment === 'Negative' ? 'badge-high' : ($item->sentiment === 'Positive' ? 'badge-low' : 'badge-medium') }}">
                                             {{ $item->category ?? 'Umum' }}
                                         </span>
+
                                         <small class="text-muted">{{ $item->sentiment }}</small>
                                     </div>
+
                                     <div class="news-title">{{ $item->title }}</div>
                                     <div class="news-desc">{{ $item->description }}</div>
                                 </div>
@@ -373,7 +387,7 @@
                                 @forelse ($ports as $port)
                                     <tr>
                                         <td>
-                                            <i class="bi bi-anchor text-primary"></i>
+                                            <i class="bi bi-pin-map-fill text-primary"></i>
                                             <strong>{{ $port->name }}</strong>
                                         </td>
                                         <td>{{ $port->city ?? '-' }}</td>
@@ -407,6 +421,7 @@
 <!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ asset('js/api-dashboard.js') }}?v={{ time() }}"></script>
 
 <script>
     const riskScore = Number(@json($risk->total_score ?? 0));
@@ -440,6 +455,7 @@
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true,
             plugins: {
                 legend: {
                     display: true
@@ -466,6 +482,7 @@
         },
         options: {
             cutout: '68%',
+            maintainAspectRatio: true,
             plugins: {
                 legend: {
                     display: false
@@ -495,6 +512,10 @@
                 `);
         }
     });
+
+    setTimeout(function () {
+        map.invalidateSize();
+    }, 300);
 </script>
 
 </body>

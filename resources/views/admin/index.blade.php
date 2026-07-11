@@ -16,71 +16,11 @@
 <body>
 <div class="app">
     <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-icon">
-                <i class="bi bi-box-seam"></i>
-            </div>
-            <div>
-                Supply Chain<br>Management
-            </div>
-        </div>
+    <body>
+<div class="app">
 
-        <a href="{{ route('dashboard') }}" class="nav-link-custom {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="bi bi-house-door-fill"></i>
-            <span>Dashboard</span>
-        </a>
+    @include('partials.sidebar')
 
-        <a href="{{ route('countries.index') }}" class="nav-link-custom {{ request()->routeIs('countries.index') ? 'active' : '' }}">
-            <i class="bi bi-globe2"></i>
-            <span>Negara</span>
-        </a>
-
-        <a href="{{ route('risks.index') }}" class="nav-link-custom {{ request()->routeIs('risks.index') ? 'active' : '' }}">
-            <i class="bi bi-shield-check"></i>
-            <span>Risiko</span>
-        </a>
-
-        <a href="{{ route('ports.index') }}" class="nav-link-custom {{ request()->routeIs('ports.index') ? 'active' : '' }}">
-            <i class="bi bi-pin-map-fill"></i>
-            <span>Pelabuhan</span>
-        </a>
-
-        <a href="{{ route('currencies.index') }}" class="nav-link-custom {{ request()->routeIs('currencies.index') ? 'active' : '' }}">
-            <i class="bi bi-currency-dollar"></i>
-            <span>Kurs</span>
-        </a>
-
-        <a href="{{ route('news.index') }}" class="nav-link-custom {{ request()->routeIs('news.index') ? 'active' : '' }}">
-            <i class="bi bi-newspaper"></i>
-            <span>Berita</span>
-        </a>
-
-        <a href="{{ route('comparisons.index') }}" class="nav-link-custom {{ request()->routeIs('comparisons.index') ? 'active' : '' }}">
-            <i class="bi bi-bar-chart-line"></i>
-            <span>Perbandingan</span>
-        </a>
-
-        <a href="{{ route('watchlists.index') }}" class="nav-link-custom {{ request()->routeIs('watchlists.index') ? 'active' : '' }}">
-            <i class="bi bi-star"></i>
-            <span>Watchlist</span>
-        </a>
-
-        <a href="{{ route('admin.index') }}" class="nav-link-custom {{ request()->routeIs('admin.index') ? 'active' : '' }}">
-    <i class="bi bi-person-gear"></i>
-    <span>Admin</span>
-</a>
-
-        <div class="sidebar-user">
-            <div class="user-avatar">
-                <i class="bi bi-person-fill"></i>
-            </div>
-            <div>
-                <div style="font-weight: 700;">Admin</div>
-                <div style="font-size: 13px; color: #bfdbfe;">Administrator</div>
-            </div>
-        </div>
-    </aside>
 
     <!-- MAIN -->
     <main class="main">
@@ -92,6 +32,91 @@
         </div>
 
         <div class="content">
+            @if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if ($errors->any())
+    <div class="alert alert-danger">
+        {{ $errors->first() }}
+    </div>
+@endif
+<div class="card-clean mb-4">
+    <div class="section-title">Tambah Negara Baru</div>
+
+    <form action="{{ route('admin.countries.store') }}" method="POST">
+        @csrf
+
+        <div class="row g-3">
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Kode Negara</label>
+                <input type="text" name="country_code" class="form-control" placeholder="JP" required>
+                <div class="metric-sub mt-1">Contoh: JP, SG, TH</div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Nama Negara</label>
+                <input type="text" name="name" class="form-control" placeholder="Japan" required>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Ibu Kota</label>
+                <input type="text" name="capital" class="form-control" placeholder="Tokyo">
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Region</label>
+                <input type="text" name="region" class="form-control" placeholder="Asia Timur">
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Kode Mata Uang</label>
+                <input type="text" name="currency_code" class="form-control" placeholder="JPY" required>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Nama Mata Uang</label>
+                <input type="text" name="currency_name" class="form-control" placeholder="Yen">
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Bahasa</label>
+                <input type="text" name="language" class="form-control" placeholder="Japanese">
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Exchange Rate</label>
+                <input type="number" step="0.000001" name="exchange_rate" class="form-control" placeholder="157.35">
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Latitude</label>
+                <input type="number" step="0.0000001" name="latitude" class="form-control" placeholder="35.6762">
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Longitude</label>
+                <input type="number" step="0.0000001" name="longitude" class="form-control" placeholder="139.6503">
+            </div>
+
+            <div class="col-lg-6 col-md-12 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-plus-circle"></i>
+                    Tambah Negara ke Sistem
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <div class="recommendation-box mt-4">
+        <strong>Catatan:</strong>
+        <div class="mt-2">
+            Setelah negara ditambahkan, sistem otomatis membuat data awal untuk ekonomi, cuaca, kurs, risiko, pelabuhan, dan berita agar negara langsung bisa muncul di dashboard dan watchlist.
+        </div>
+    </div>
+</div>
             <!-- SUMMARY -->
             <div class="row g-3 mb-4">
                 <div class="col-lg-3 col-md-6">
