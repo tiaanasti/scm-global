@@ -17,6 +17,7 @@ class SupplyChainSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@supplyrisk.test',
             'password' => Hash::make('password'),
+            'role' => 'admin',
             'created_at' => $now,
             'updated_at' => $now,
         ]);

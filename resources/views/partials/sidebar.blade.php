@@ -49,22 +49,33 @@
     </a>
 
     <a href="{{ route('reports.index') }}" class="nav-link-custom {{ request()->routeIs('reports.index') ? 'active' : '' }}">
-    <i class="bi bi-file-earmark-bar-graph"></i>
-    <span>Laporan</span>
-</a>
-
-    <a href="{{ route('admin.index') }}" class="nav-link-custom {{ request()->routeIs('admin.index') ? 'active' : '' }}">
-        <i class="bi bi-person-gear"></i>
-        <span>Admin</span>
+        <i class="bi bi-file-earmark-bar-graph"></i>
+        <span>Laporan</span>
     </a>
 
-    <div class="sidebar-user">
-        <div class="user-avatar">
-            <i class="bi bi-person-fill"></i>
+    @if (auth()->check() && auth()->user()->role === 'admin')
+        <a href="{{ route('admin.index') }}" class="nav-link-custom {{ request()->routeIs('admin.*') ? 'active' : '' }}">
+            <i class="bi bi-person-gear"></i>
+            <span>Admin</span>
+        </a>
+    @endif
+
+    @auth
+        <div class="sidebar-user">
+            <div class="user-avatar">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div style="font-weight: 700;">{{ auth()->user()->name }}</div>
+                <div style="font-size: 13px; color: #bfdbfe;">{{ auth()->user()->email }}</div>
+                <form action="{{ route('logout') }}" method="POST" class="mt-2">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-light w-100">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Keluar
+                    </button>
+                </form>
+            </div>
         </div>
-        <div>
-            <div style="font-weight: 700;">Admin</div>
-            <div style="font-size: 13px; color: #bfdbfe;">Administrator</div>
-        </div>
-    </div>
+    @endauth
 </aside>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Supply Chain Management')</title>
+    <title>@yield('title', 'Masuk - Supply Chain Management')</title>
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -18,31 +18,16 @@
     >
 
     <link
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        rel="stylesheet"
-    >
-
-    <link
         rel="stylesheet"
         href="{{ asset('css/style.css') }}?v={{ file_exists(public_path('css/style.css')) ? filemtime(public_path('css/style.css')) : time() }}"
     >
 
     @stack('styles')
 </head>
-
-<body>
-    <div class="app">
-        @include('partials.sidebar')
-
-        <main class="main">
-            @yield('content')
-        </main>
-    </div>
+<body class="login-page">
+    @yield('content')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     @stack('scripts')
 </body>
 </html>

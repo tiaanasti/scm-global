@@ -1,8 +1,8 @@
-@extends('layouts.app')
 
-@section('title', 'Panel Admin - Supply Chain Management')
 
-@section('content')
+<?php $__env->startSection('title', 'Panel Admin - Supply Chain Management'); ?>
+
+<?php $__env->startSection('content'); ?>
 <div class="topbar">
     <div class="page-title">
         <h1>Panel Admin</h1>
@@ -15,10 +15,11 @@
 
 <div class="content">
 
-    {{-- PESAN BERHASIL --}}
-    @if (session('success'))
+    
+    <?php if(session('success')): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
+            <?php echo e(session('success')); ?>
+
 
             <button
                 type="button"
@@ -27,12 +28,13 @@
                 aria-label="Close"
             ></button>
         </div>
-    @endif
+    <?php endif; ?>
 
-    {{-- PESAN ERROR --}}
-    @if (session('error'))
+    
+    <?php if(session('error')): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
+            <?php echo e(session('error')); ?>
+
 
             <button
                 type="button"
@@ -41,22 +43,22 @@
                 aria-label="Close"
             ></button>
         </div>
-    @endif
+    <?php endif; ?>
 
-    {{-- VALIDATION ERROR --}}
-    @if ($errors->any())
+    
+    <?php if($errors->any()): ?>
         <div class="alert alert-danger">
             <strong>Data belum dapat disimpan.</strong>
 
             <ul class="mb-0 mt-2">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
+                <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <li><?php echo e($error); ?></li>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </ul>
         </div>
-    @endif
+    <?php endif; ?>
 
-    {{-- API SYNC NEGARA WATCHLIST --}}
+    
     <div class="card-clean mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
@@ -72,11 +74,11 @@
             </div>
 
             <form
-                action="{{ route('admin.api.sync') }}"
+                action="<?php echo e(route('admin.api.sync')); ?>"
                 method="POST"
                 onsubmit="return confirm('Sinkronkan data API untuk negara di Watchlist sekarang?')"
             >
-                @csrf
+                <?php echo csrf_field(); ?>
 
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-cloud-arrow-down me-1"></i>
@@ -86,7 +88,7 @@
         </div>
     </div>
 
-    {{-- WORLD BANK SYNC --}}
+    
     <div class="card-clean mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
@@ -101,11 +103,11 @@
             </div>
 
             <form
-                action="{{ route('admin.world_bank.sync') }}"
+                action="<?php echo e(route('admin.world_bank.sync')); ?>"
                 method="POST"
                 onsubmit="return confirm('Sinkronkan data ekonomi semua negara dari World Bank sekarang?')"
             >
-                @csrf
+                <?php echo csrf_field(); ?>
 
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-bank me-1"></i>
@@ -115,7 +117,7 @@
         </div>
     </div>
 
-    {{-- RISK SCORING NEGARA --}}
+    
     <div class="card-clean mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
@@ -130,11 +132,11 @@
             </div>
 
             <form
-                action="{{ route('admin.risk.recalculate') }}"
+                action="<?php echo e(route('admin.risk.recalculate')); ?>"
                 method="POST"
                 onsubmit="return confirm('Hitung ulang skor risiko seluruh negara sekarang?')"
             >
-                @csrf
+                <?php echo csrf_field(); ?>
 
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-arrow-repeat me-1"></i>
@@ -144,7 +146,7 @@
         </div>
     </div>
 
-    {{-- SYNC NEGARA DARI REST COUNTRIES --}}
+    
     <div class="card-clean mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
@@ -159,11 +161,11 @@
             </div>
 
             <form
-                action="{{ route('admin.countries.sync_api') }}"
+                action="<?php echo e(route('admin.countries.sync_api')); ?>"
                 method="POST"
                 onsubmit="return confirm('Sinkronkan data negara dari REST Countries API sekarang?')"
             >
-                @csrf
+                <?php echo csrf_field(); ?>
 
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-globe2 me-1"></i>
@@ -173,7 +175,7 @@
         </div>
     </div>
 
-    {{-- SYNC WORLD PORT INDEX --}}
+    
     <div class="card-clean mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
@@ -187,11 +189,11 @@
             </div>
 
             <form
-                action="{{ route('admin.ports.sync_world_port_index') }}"
+                action="<?php echo e(route('admin.ports.sync_world_port_index')); ?>"
                 method="POST"
                 onsubmit="return confirm('Sinkronkan data World Port Index sekarang?')"
             >
-                @csrf
+                <?php echo csrf_field(); ?>
 
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-anchor me-1"></i>
@@ -201,7 +203,7 @@
         </div>
     </div>
 
-    {{-- HITUNG RISIKO PELABUHAN --}}
+    
     <div class="card-clean mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
@@ -215,11 +217,11 @@
             </div>
 
             <form
-                action="{{ route('admin.ports.recalculate_risk') }}"
+                action="<?php echo e(route('admin.ports.recalculate_risk')); ?>"
                 method="POST"
                 onsubmit="return confirm('Hitung ulang risiko seluruh pelabuhan sekarang?')"
             >
-                @csrf
+                <?php echo csrf_field(); ?>
 
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-arrow-repeat me-1"></i>
@@ -229,14 +231,14 @@
         </div>
     </div>
 
-    {{-- TAMBAH NEGARA --}}
+    
     <div class="card-clean mb-4">
         <div class="section-title">
             Tambah Negara Baru
         </div>
 
-        <form action="{{ route('admin.countries.store') }}" method="POST">
-            @csrf
+        <form action="<?php echo e(route('admin.countries.store')); ?>" method="POST">
+            <?php echo csrf_field(); ?>
 
             <div class="row g-3">
                 <div class="col-lg-3 col-md-6">
@@ -248,7 +250,7 @@
                         type="text"
                         name="country_code"
                         class="form-control"
-                        value="{{ old('country_code') }}"
+                        value="<?php echo e(old('country_code')); ?>"
                         placeholder="JP"
                         maxlength="3"
                         required
@@ -268,7 +270,7 @@
                         type="text"
                         name="name"
                         class="form-control"
-                        value="{{ old('name') }}"
+                        value="<?php echo e(old('name')); ?>"
                         placeholder="Japan"
                         required
                     >
@@ -283,7 +285,7 @@
                         type="text"
                         name="capital"
                         class="form-control"
-                        value="{{ old('capital') }}"
+                        value="<?php echo e(old('capital')); ?>"
                         placeholder="Tokyo"
                     >
                 </div>
@@ -297,7 +299,7 @@
                         type="text"
                         name="region"
                         class="form-control"
-                        value="{{ old('region') }}"
+                        value="<?php echo e(old('region')); ?>"
                         placeholder="Asia Timur"
                     >
                 </div>
@@ -311,7 +313,7 @@
                         type="text"
                         name="currency_code"
                         class="form-control"
-                        value="{{ old('currency_code') }}"
+                        value="<?php echo e(old('currency_code')); ?>"
                         placeholder="JPY"
                         maxlength="3"
                         required
@@ -327,7 +329,7 @@
                         type="text"
                         name="currency_name"
                         class="form-control"
-                        value="{{ old('currency_name') }}"
+                        value="<?php echo e(old('currency_name')); ?>"
                         placeholder="Yen"
                     >
                 </div>
@@ -341,7 +343,7 @@
                         type="text"
                         name="language"
                         class="form-control"
-                        value="{{ old('language') }}"
+                        value="<?php echo e(old('language')); ?>"
                         placeholder="Japanese"
                     >
                 </div>
@@ -357,7 +359,7 @@
                         min="0"
                         name="exchange_rate"
                         class="form-control"
-                        value="{{ old('exchange_rate') }}"
+                        value="<?php echo e(old('exchange_rate')); ?>"
                         placeholder="157.35"
                     >
                 </div>
@@ -374,7 +376,7 @@
                         max="90"
                         name="latitude"
                         class="form-control"
-                        value="{{ old('latitude') }}"
+                        value="<?php echo e(old('latitude')); ?>"
                         placeholder="35.6762"
                     >
                 </div>
@@ -391,7 +393,7 @@
                         max="180"
                         name="longitude"
                         class="form-control"
-                        value="{{ old('longitude') }}"
+                        value="<?php echo e(old('longitude')); ?>"
                         placeholder="139.6503"
                     >
                 </div>
@@ -415,7 +417,7 @@
         </div>
     </div>
 
-    {{-- SUMMARY BARIS PERTAMA --}}
+    
     <div class="row g-3 mb-4">
         <div class="col-lg-3 col-md-6">
             <div class="card-clean metric-card h-100">
@@ -427,7 +429,8 @@
                     <div class="metric-label">User</div>
 
                     <div class="metric-value">
-                        {{ $summary['users_count'] ?? 0 }}
+                        <?php echo e($summary['users_count'] ?? 0); ?>
+
                     </div>
 
                     <div class="metric-sub">
@@ -447,7 +450,8 @@
                     <div class="metric-label">Negara</div>
 
                     <div class="metric-value">
-                        {{ $summary['countries_count'] ?? 0 }}
+                        <?php echo e($summary['countries_count'] ?? 0); ?>
+
                     </div>
 
                     <div class="metric-sub">
@@ -467,7 +471,8 @@
                     <div class="metric-label">Pelabuhan</div>
 
                     <div class="metric-value">
-                        {{ $summary['ports_count'] ?? 0 }}
+                        <?php echo e($summary['ports_count'] ?? 0); ?>
+
                     </div>
 
                     <div class="metric-sub">
@@ -487,7 +492,8 @@
                     <div class="metric-label">Berita</div>
 
                     <div class="metric-value">
-                        {{ $summary['news_count'] ?? 0 }}
+                        <?php echo e($summary['news_count'] ?? 0); ?>
+
                     </div>
 
                     <div class="metric-sub">
@@ -498,7 +504,7 @@
         </div>
     </div>
 
-    {{-- SUMMARY BARIS KEDUA --}}
+    
     <div class="row g-3 mb-4">
         <div class="col-lg-3 col-md-6">
             <div class="card-clean metric-card h-100">
@@ -510,7 +516,8 @@
                     <div class="metric-label">Artikel</div>
 
                     <div class="metric-value">
-                        {{ $summary['articles_count'] ?? 0 }}
+                        <?php echo e($summary['articles_count'] ?? 0); ?>
+
                     </div>
 
                     <div class="metric-sub">
@@ -530,7 +537,8 @@
                     <div class="metric-label">Watchlist</div>
 
                     <div class="metric-value">
-                        {{ $summary['watchlists_count'] ?? 0 }}
+                        <?php echo e($summary['watchlists_count'] ?? 0); ?>
+
                     </div>
 
                     <div class="metric-sub">
@@ -550,7 +558,8 @@
                     <div class="metric-label">Positive Words</div>
 
                     <div class="metric-value">
-                        {{ $summary['positive_words_count'] ?? 0 }}
+                        <?php echo e($summary['positive_words_count'] ?? 0); ?>
+
                     </div>
 
                     <div class="metric-sub">
@@ -570,7 +579,8 @@
                     <div class="metric-label">Negative Words</div>
 
                     <div class="metric-value">
-                        {{ $summary['negative_words_count'] ?? 0 }}
+                        <?php echo e($summary['negative_words_count'] ?? 0); ?>
+
                     </div>
 
                     <div class="metric-sub">
@@ -581,18 +591,18 @@
         </div>
     </div>
 
-    {{-- KELOLA USER --}}
+    
     <div class="card-clean mb-4">
         <div class="section-title">
             Kelola User
         </div>
 
         <form
-            action="{{ route('admin.users.store') }}"
+            action="<?php echo e(route('admin.users.store')); ?>"
             method="POST"
             class="mb-4"
         >
-            @csrf
+            <?php echo csrf_field(); ?>
 
             <div class="row g-3">
                 <div class="col-lg-3 col-md-6">
@@ -604,7 +614,7 @@
                         type="text"
                         name="name"
                         class="form-control"
-                        value="{{ old('name') }}"
+                        value="<?php echo e(old('name')); ?>"
                         required
                     >
                 </div>
@@ -618,7 +628,7 @@
                         type="email"
                         name="email"
                         class="form-control"
-                        value="{{ old('email') }}"
+                        value="<?php echo e(old('email')); ?>"
                         required
                     >
                 </div>
@@ -631,14 +641,16 @@
                     <select name="role" class="form-select" required>
                         <option
                             value="user"
-                            {{ old('role', 'user') === 'user' ? 'selected' : '' }}
+                            <?php echo e(old('role', 'user') === 'user' ? 'selected' : ''); ?>
+
                         >
                             User
                         </option>
 
                         <option
                             value="admin"
-                            {{ old('role') === 'admin' ? 'selected' : '' }}
+                            <?php echo e(old('role') === 'admin' ? 'selected' : ''); ?>
+
                         >
                             Admin
                         </option>
@@ -693,55 +705,57 @@
                 </thead>
 
                 <tbody>
-                @forelse ($users as $user)
+                <?php $__empty_1 = true; $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr>
                         <td>
-                            <strong>{{ $user->name }}</strong>
+                            <strong><?php echo e($user->name); ?></strong>
 
-                            @if ((int) $user->id === (int) auth()->id())
+                            <?php if((int) $user->id === (int) auth()->id()): ?>
                                 <span class="risk-badge risk-low ms-1">
                                     Anda
                                 </span>
-                            @endif
+                            <?php endif; ?>
                         </td>
 
                         <td>
-                            {{ $user->email }}
+                            <?php echo e($user->email); ?>
+
                         </td>
 
                         <td>
                             <span
-                                class="risk-badge {{ ($user->role ?? 'user') === 'admin' ? 'risk-high' : 'risk-low' }}"
+                                class="risk-badge <?php echo e(($user->role ?? 'user') === 'admin' ? 'risk-high' : 'risk-low'); ?>"
                             >
-                                {{ ucfirst($user->role ?? 'user') }}
+                                <?php echo e(ucfirst($user->role ?? 'user')); ?>
+
                             </span>
                         </td>
 
                         <td>
-                            {{ $user->created_at
+                            <?php echo e($user->created_at
                                 ? \Carbon\Carbon::parse($user->created_at)->format('d M Y H:i')
-                                : '-'
-                            }}
+                                : '-'); ?>
+
                         </td>
 
                         <td>
                             <div class="d-flex gap-2 flex-wrap">
                                 <a
-                                    href="{{ route('admin.users.edit', $user->id) }}"
+                                    href="<?php echo e(route('admin.users.edit', $user->id)); ?>"
                                     class="btn btn-sm btn-outline-primary"
                                 >
                                     <i class="bi bi-pencil-square me-1"></i>
                                     Edit
                                 </a>
 
-                                @if ((int) $user->id !== (int) auth()->id())
+                                <?php if((int) $user->id !== (int) auth()->id()): ?>
                                     <form
-                                        action="{{ route('admin.users.destroy', $user->id) }}"
+                                        action="<?php echo e(route('admin.users.destroy', $user->id)); ?>"
                                         method="POST"
                                         onsubmit="return confirm('Yakin ingin menghapus user ini?')"
                                     >
-                                        @csrf
-                                        @method('DELETE')
+                                        <?php echo csrf_field(); ?>
+                                        <?php echo method_field('DELETE'); ?>
 
                                         <button
                                             type="submit"
@@ -751,23 +765,23 @@
                                             Hapus
                                         </button>
                                     </form>
-                                @endif
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
                         <td colspan="5" class="text-center text-muted py-4">
                             Belum ada user.
                         </td>
                     </tr>
-                @endforelse
+                <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 
-    {{-- API LOG --}}
+    
     <div class="card-clean mb-4">
         <div class="section-title">
             API Logs
@@ -785,50 +799,53 @@
                 </thead>
 
                 <tbody>
-                @forelse ($apiLogs as $log)
+                <?php $__empty_1 = true; $__currentLoopData = $apiLogs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr>
                         <td>
-                            <strong>{{ $log->api_name }}</strong>
+                            <strong><?php echo e($log->api_name); ?></strong>
 
                             <div class="metric-sub">
-                                {{ $log->endpoint ?? '-' }}
+                                <?php echo e($log->endpoint ?? '-'); ?>
+
                             </div>
                         </td>
 
                         <td>
                             <span
-                                class="risk-badge {{ $log->status === 'Success' ? 'risk-low' : 'risk-high' }}"
+                                class="risk-badge <?php echo e($log->status === 'Success' ? 'risk-low' : 'risk-high'); ?>"
                             >
-                                {{ $log->status }}
+                                <?php echo e($log->status); ?>
+
                             </span>
                         </td>
 
                         <td>
                             <div class="metric-sub">
-                                {{ $log->message ?? '-' }}
+                                <?php echo e($log->message ?? '-'); ?>
+
                             </div>
                         </td>
 
                         <td>
-                            {{ $log->requested_at
+                            <?php echo e($log->requested_at
                                 ? \Carbon\Carbon::parse($log->requested_at)->format('d M Y H:i') . ' WIB'
-                                : '-'
-                            }}
+                                : '-'); ?>
+
                         </td>
                     </tr>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
                         <td colspan="4" class="text-center text-muted py-4">
                             Belum ada log API.
                         </td>
                     </tr>
-                @endforelse
+                <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 
-    {{-- DATASET NEGARA --}}
+    
     <div class="card-clean mb-4">
         <div class="section-title">
             Dataset Negara dan Risiko
@@ -848,26 +865,28 @@
                 </thead>
 
                 <tbody>
-                @forelse ($countries as $country)
+                <?php $__empty_1 = true; $__currentLoopData = $countries; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $country): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr>
                         <td>
-                            <strong>{{ $country->name }}</strong>
+                            <strong><?php echo e($country->name); ?></strong>
                         </td>
 
                         <td>
-                            {{ $country->region ?? '-' }}
+                            <?php echo e($country->region ?? '-'); ?>
+
                         </td>
 
                         <td>
-                            {{ $country->currency_code ?? '-' }}
+                            <?php echo e($country->currency_code ?? '-'); ?>
+
                         </td>
 
                         <td>
-                            {{ $country->total_score ?? 0 }}/100
+                            <?php echo e($country->total_score ?? 0); ?>/100
                         </td>
 
                         <td>
-                            @php
+                            <?php
                                 $countryRiskScore = (float) ($country->total_score ?? 0);
 
                                 $countryRiskClass = $countryRiskScore >= 60
@@ -875,17 +894,18 @@
                                     : ($countryRiskScore >= 35
                                         ? 'risk-medium'
                                         : 'risk-low');
-                            @endphp
+                            ?>
 
-                            <span class="risk-badge {{ $countryRiskClass }}">
-                                {{ $country->risk_level ?? 'Belum dihitung' }}
+                            <span class="risk-badge <?php echo e($countryRiskClass); ?>">
+                                <?php echo e($country->risk_level ?? 'Belum dihitung'); ?>
+
                             </span>
                         </td>
 
                         <td>
                             <div class="d-flex gap-2 flex-wrap">
                                 <a
-                                    href="{{ route('admin.countries.edit', $country->id) }}"
+                                    href="<?php echo e(route('admin.countries.edit', $country->id)); ?>"
                                     class="btn btn-sm btn-outline-primary"
                                 >
                                     <i class="bi bi-pencil-square me-1"></i>
@@ -893,12 +913,12 @@
                                 </a>
 
                                 <form
-                                    action="{{ route('admin.countries.destroy', $country->id) }}"
+                                    action="<?php echo e(route('admin.countries.destroy', $country->id)); ?>"
                                     method="POST"
                                     onsubmit="return confirm('Yakin ingin menghapus negara ini? Semua data terkait negara ini juga akan dihapus.')"
                                 >
-                                    @csrf
-                                    @method('DELETE')
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('DELETE'); ?>
 
                                     <button
                                         type="submit"
@@ -911,19 +931,19 @@
                             </div>
                         </td>
                     </tr>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
                         <td colspan="6" class="text-center text-muted py-4">
                             Belum ada data negara.
                         </td>
                     </tr>
-                @endforelse
+                <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 
-    {{-- TAMBAH PELABUHAN --}}
+    
     <div class="card-clean mb-4">
         <div class="section-title">
             Tambah Pelabuhan Baru
@@ -934,8 +954,8 @@
             halaman Pelabuhan dan peta tracking.
         </div>
 
-        <form action="{{ route('admin.ports.store') }}" method="POST">
-            @csrf
+        <form action="<?php echo e(route('admin.ports.store')); ?>" method="POST">
+            <?php echo csrf_field(); ?>
 
             <div class="row g-3">
                 <div class="col-lg-4 col-md-6">
@@ -947,7 +967,7 @@
                         type="text"
                         name="name"
                         class="form-control"
-                        value="{{ old('name') }}"
+                        value="<?php echo e(old('name')); ?>"
                         placeholder="Pelabuhan Tanjung Priok"
                         required
                     >
@@ -962,7 +982,7 @@
                         type="text"
                         name="city"
                         class="form-control"
-                        value="{{ old('city') }}"
+                        value="<?php echo e(old('city')); ?>"
                         placeholder="Jakarta"
                     >
                 </div>
@@ -981,14 +1001,16 @@
                             Pilih negara
                         </option>
 
-                        @foreach ($countries as $country)
+                        <?php $__currentLoopData = $countries; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $country): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <option
-                                value="{{ $country->id }}"
-                                {{ (string) old('country_id') === (string) $country->id ? 'selected' : '' }}
+                                value="<?php echo e($country->id); ?>"
+                                <?php echo e((string) old('country_id') === (string) $country->id ? 'selected' : ''); ?>
+
                             >
-                                {{ $country->name }}
+                                <?php echo e($country->name); ?>
+
                             </option>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                 </div>
 
@@ -1001,7 +1023,7 @@
                         type="number"
                         name="latitude"
                         class="form-control"
-                        value="{{ old('latitude') }}"
+                        value="<?php echo e(old('latitude')); ?>"
                         min="-90"
                         max="90"
                         step="0.0000001"
@@ -1019,7 +1041,7 @@
                         type="number"
                         name="longitude"
                         class="form-control"
-                        value="{{ old('longitude') }}"
+                        value="<?php echo e(old('longitude')); ?>"
                         min="-180"
                         max="180"
                         step="0.0000001"
@@ -1036,28 +1058,32 @@
                     <select name="status" class="form-select" required>
                         <option
                             value="Aman"
-                            {{ old('status', 'Aman') === 'Aman' ? 'selected' : '' }}
+                            <?php echo e(old('status', 'Aman') === 'Aman' ? 'selected' : ''); ?>
+
                         >
                             Aman
                         </option>
 
                         <option
                             value="Waspada"
-                            {{ old('status') === 'Waspada' ? 'selected' : '' }}
+                            <?php echo e(old('status') === 'Waspada' ? 'selected' : ''); ?>
+
                         >
                             Waspada
                         </option>
 
                         <option
                             value="Siaga"
-                            {{ old('status') === 'Siaga' ? 'selected' : '' }}
+                            <?php echo e(old('status') === 'Siaga' ? 'selected' : ''); ?>
+
                         >
                             Siaga
                         </option>
 
                         <option
                             value="Darurat"
-                            {{ old('status') === 'Darurat' ? 'selected' : '' }}
+                            <?php echo e(old('status') === 'Darurat' ? 'selected' : ''); ?>
+
                         >
                             Darurat
                         </option>
@@ -1073,7 +1099,7 @@
                         type="number"
                         name="port_risk_score"
                         class="form-control"
-                        value="{{ old('port_risk_score', 0) }}"
+                        value="<?php echo e(old('port_risk_score', 0)); ?>"
                         min="0"
                         max="100"
                         step="0.01"
@@ -1091,7 +1117,7 @@
         </form>
     </div>
 
-    {{-- DATASET PELABUHAN --}}
+    
     <div class="card-clean mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
             <div>
@@ -1106,7 +1132,7 @@
             </div>
 
             <span class="risk-badge risk-low">
-                {{ $ports->count() }} pelabuhan
+                <?php echo e($ports->count()); ?> pelabuhan
             </span>
         </div>
 
@@ -1123,8 +1149,8 @@
                 </thead>
 
                 <tbody>
-                @forelse ($ports as $port)
-                    @php
+                <?php $__empty_1 = true; $__currentLoopData = $ports; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $port): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <?php
                         $portStatus = $port->status ?? 'Aman';
 
                         $portStatusClass = in_array(
@@ -1136,41 +1162,45 @@
                             : ($portStatus === 'Waspada'
                                 ? 'risk-medium'
                                 : 'risk-high');
-                    @endphp
+                    ?>
 
                     <tr>
                         <td>
                             <i class="bi bi-pin-map-fill text-primary me-1"></i>
 
                             <strong>
-                                {{ $port->name }}
+                                <?php echo e($port->name); ?>
+
                             </strong>
 
                             <div class="metric-sub">
-                                {{ $port->city ?? '-' }}
+                                <?php echo e($port->city ?? '-'); ?>
+
                             </div>
                         </td>
 
                         <td>
-                            {{ $port->country_name ?? '-' }}
+                            <?php echo e($port->country_name ?? '-'); ?>
+
                         </td>
 
                         <td>
-                            <span class="risk-badge {{ $portStatusClass }}">
-                                {{ $portStatus }}
+                            <span class="risk-badge <?php echo e($portStatusClass); ?>">
+                                <?php echo e($portStatus); ?>
+
                             </span>
                         </td>
 
                         <td>
                             <strong>
-                                {{ number_format((float) ($port->port_risk_score ?? 0), 0) }}/100
+                                <?php echo e(number_format((float) ($port->port_risk_score ?? 0), 0)); ?>/100
                             </strong>
                         </td>
 
                         <td>
                             <div class="d-flex gap-2 flex-wrap">
                                 <a
-                                    href="{{ route('admin.ports.edit', $port->id) }}"
+                                    href="<?php echo e(route('admin.ports.edit', $port->id)); ?>"
                                     class="btn btn-sm btn-outline-primary"
                                 >
                                     <i class="bi bi-pencil-square me-1"></i>
@@ -1178,12 +1208,12 @@
                                 </a>
 
                                 <form
-                                    action="{{ route('admin.ports.destroy', $port->id) }}"
+                                    action="<?php echo e(route('admin.ports.destroy', $port->id)); ?>"
                                     method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus pelabuhan {{ addslashes($port->name) }}?')"
+                                    onsubmit="return confirm('Yakin ingin menghapus pelabuhan <?php echo e(addslashes($port->name)); ?>?')"
                                 >
-                                    @csrf
-                                    @method('DELETE')
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('DELETE'); ?>
 
                                     <button
                                         type="submit"
@@ -1196,26 +1226,26 @@
                             </div>
                         </td>
                     </tr>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
                         <td colspan="5" class="text-center text-muted py-4">
                             Belum ada data pelabuhan.
                         </td>
                     </tr>
-                @endforelse
+                <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 
-    {{-- TAMBAH ARTIKEL --}}
+    
     <div class="card-clean mb-4">
         <div class="section-title">
             Tambah Artikel Analisis
         </div>
 
-        <form action="{{ route('admin.articles.store') }}" method="POST">
-            @csrf
+        <form action="<?php echo e(route('admin.articles.store')); ?>" method="POST">
+            <?php echo csrf_field(); ?>
 
             <div class="row g-3">
                 <div class="col-lg-4 col-md-6">
@@ -1227,7 +1257,7 @@
                         type="text"
                         name="title"
                         class="form-control"
-                        value="{{ old('title') }}"
+                        value="<?php echo e(old('title')); ?>"
                         placeholder="Analisis Risiko Rantai Pasok Asia"
                         required
                     >
@@ -1242,7 +1272,7 @@
                         type="text"
                         name="category"
                         class="form-control"
-                        value="{{ old('category') }}"
+                        value="<?php echo e(old('category')); ?>"
                         placeholder="Analisis / Ekonomi / Logistik"
                     >
                 </div>
@@ -1255,14 +1285,16 @@
                     <select name="status" class="form-select" required>
                         <option
                             value="Draft"
-                            {{ old('status', 'Draft') === 'Draft' ? 'selected' : '' }}
+                            <?php echo e(old('status', 'Draft') === 'Draft' ? 'selected' : ''); ?>
+
                         >
                             Draft
                         </option>
 
                         <option
                             value="Published"
-                            {{ old('status') === 'Published' ? 'selected' : '' }}
+                            <?php echo e(old('status') === 'Published' ? 'selected' : ''); ?>
+
                         >
                             Published
                         </option>
@@ -1287,43 +1319,47 @@
                         class="form-control"
                         placeholder="Tulis ringkasan analisis risiko rantai pasok di sini..."
                         required
-                    >{{ old('content') }}</textarea>
+                    ><?php echo e(old('content')); ?></textarea>
                 </div>
             </div>
         </form>
     </div>
 
-    {{-- ARTIKEL ANALISIS --}}
+    
     <div class="card-clean mb-4">
         <div class="section-title">
             Artikel Analisis
         </div>
 
-        @forelse ($articles as $article)
+        <?php $__empty_1 = true; $__currentLoopData = $articles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $article): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="news-item">
                 <div class="d-flex align-items-center gap-2 mb-1">
                     <span
-                        class="risk-badge {{ $article->status === 'Published' ? 'risk-low' : 'risk-medium' }}"
+                        class="risk-badge <?php echo e($article->status === 'Published' ? 'risk-low' : 'risk-medium'); ?>"
                     >
-                        {{ $article->status }}
+                        <?php echo e($article->status); ?>
+
                     </span>
 
                     <small class="text-muted">
-                        {{ $article->category ?? '-' }}
+                        <?php echo e($article->category ?? '-'); ?>
+
                     </small>
                 </div>
 
                 <div class="news-title">
-                    {{ $article->title }}
+                    <?php echo e($article->title); ?>
+
                 </div>
 
                 <div class="news-desc mb-3">
-                    Penulis: {{ $article->author_name ?? 'Admin' }}
+                    Penulis: <?php echo e($article->author_name ?? 'Admin'); ?>
+
                 </div>
 
                 <div class="d-flex gap-2 flex-wrap">
                     <a
-                        href="{{ route('admin.articles.edit', $article->id) }}"
+                        href="<?php echo e(route('admin.articles.edit', $article->id)); ?>"
                         class="btn btn-sm btn-outline-primary"
                     >
                         <i class="bi bi-pencil-square me-1"></i>
@@ -1331,12 +1367,12 @@
                     </a>
 
                     <form
-                        action="{{ route('admin.articles.destroy', $article->id) }}"
+                        action="<?php echo e(route('admin.articles.destroy', $article->id)); ?>"
                         method="POST"
                         onsubmit="return confirm('Yakin ingin menghapus artikel ini?')"
                     >
-                        @csrf
-                        @method('DELETE')
+                        <?php echo csrf_field(); ?>
+                        <?php echo method_field('DELETE'); ?>
 
                         <button
                             type="submit"
@@ -1348,14 +1384,14 @@
                     </form>
                 </div>
             </div>
-        @empty
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <p class="text-muted">
                 Belum ada artikel.
             </p>
-        @endforelse
+        <?php endif; ?>
     </div>
 
-    {{-- KAMUS SENTIMEN --}}
+    
     <div class="row g-4">
         <div class="col-lg-6">
             <div class="card-clean h-100">
@@ -1363,15 +1399,16 @@
                     Kamus Kata Positif
                 </div>
 
-                @forelse ($positiveWords as $word)
+                <?php $__empty_1 = true; $__currentLoopData = $positiveWords; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $word): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <span class="risk-badge risk-low me-1 mb-2">
-                        {{ $word->word }}
+                        <?php echo e($word->word); ?>
+
                     </span>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <p class="text-muted mb-0">
                         Belum ada kata positif.
                     </p>
-                @endforelse
+                <?php endif; ?>
             </div>
         </div>
 
@@ -1381,22 +1418,24 @@
                     Kamus Kata Negatif
                 </div>
 
-                @forelse ($negativeWords as $word)
+                <?php $__empty_1 = true; $__currentLoopData = $negativeWords; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $word): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <span class="risk-badge risk-high me-1 mb-2">
-                        {{ $word->word }}
+                        <?php echo e($word->word); ?>
+
                     </span>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <p class="text-muted mb-0">
                         Belum ada kata negatif.
                     </p>
-                @endforelse
+                <?php endif; ?>
             </div>
         </div>
     </div>
 
     <div class="footer">
-        © {{ date('Y') }} Supply Chain Management.
+        © <?php echo e(date('Y')); ?> Supply Chain Management.
         Semua hak dilindungi.
     </div>
 </div>
-@endsection 
+<?php $__env->stopSection(); ?> 
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\supply-chain-management\resources\views/admin/index.blade.php ENDPATH**/ ?>

@@ -1,16 +1,16 @@
-@extends('layouts.app')
 
-@section('title', 'Pelabuhan dan Tracking - Supply Chain Management')
 
-@push('styles')
+<?php $__env->startSection('title', 'Pelabuhan dan Tracking - Supply Chain Management'); ?>
+
+<?php $__env->startPush('styles'); ?>
     <link
         rel="stylesheet"
-        href="{{ asset('css/ports.css') }}?v={{ file_exists(public_path('css/ports.css')) ? filemtime(public_path('css/ports.css')) : time() }}"
+        href="<?php echo e(asset('css/ports.css')); ?>?v=<?php echo e(file_exists(public_path('css/ports.css')) ? filemtime(public_path('css/ports.css')) : time()); ?>"
     >
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
-@php
+<?php $__env->startSection('content'); ?>
+<?php
     $safeCount = collect($ports)
         ->filter(function ($port) {
             return in_array($port->status, ['Aman', 'Normal'], true);
@@ -26,7 +26,7 @@
             return in_array($port->status, ['Siaga', 'Darurat'], true);
         })
         ->count();
-@endphp
+?>
 
 <div class="port-page">
     <div class="topbar d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -35,7 +35,7 @@
             <p>Monitoring data pelabuhan sekaligus menampilkan koneksi rute antar-pelabuhan.</p>
         </div>
 
-        <form action="{{ route('ports.index') }}" method="GET" class="port-country-form">
+        <form action="<?php echo e(route('ports.index')); ?>" method="GET" class="port-country-form">
             <select
                 name="country_id"
                 class="form-select port-country-filter"
@@ -43,14 +43,16 @@
             >
                 <option value="">Semua Negara</option>
 
-                @foreach ($countries as $country)
+                <?php $__currentLoopData = $countries; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $country): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <option
-                        value="{{ $country->id }}"
-                        {{ (string) $selectedCountryId === (string) $country->id ? 'selected' : '' }}
+                        value="<?php echo e($country->id); ?>"
+                        <?php echo e((string) $selectedCountryId === (string) $country->id ? 'selected' : ''); ?>
+
                     >
-                        {{ $country->name }}
+                        <?php echo e($country->name); ?>
+
                     </option>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </select>
         </form>
     </div>
@@ -65,8 +67,8 @@
 
                     <div class="min-w-0">
                         <div class="metric-label">Total Pelabuhan</div>
-                        <div class="metric-value">{{ $ports->count() }}</div>
-                        <div class="metric-sub">{{ $selectedCountry->name ?? 'Semua negara' }}</div>
+                        <div class="metric-value"><?php echo e($ports->count()); ?></div>
+                        <div class="metric-sub"><?php echo e($selectedCountry->name ?? 'Semua negara'); ?></div>
                     </div>
                 </div>
             </div>
@@ -79,7 +81,7 @@
 
                     <div class="min-w-0">
                         <div class="metric-label">Normal/Aman</div>
-                        <div class="metric-value">{{ $safeCount }}</div>
+                        <div class="metric-value"><?php echo e($safeCount); ?></div>
                         <div class="metric-sub">Beroperasi normal</div>
                     </div>
                 </div>
@@ -93,7 +95,7 @@
 
                     <div class="min-w-0">
                         <div class="metric-label">Waspada</div>
-                        <div class="metric-value">{{ $warningCount }}</div>
+                        <div class="metric-value"><?php echo e($warningCount); ?></div>
                         <div class="metric-sub">Perlu dipantau</div>
                     </div>
                 </div>
@@ -107,7 +109,7 @@
 
                     <div class="min-w-0">
                         <div class="metric-label">Siaga/Darurat</div>
-                        <div class="metric-value">{{ $alertCount }}</div>
+                        <div class="metric-value"><?php echo e($alertCount); ?></div>
                         <div class="metric-sub">Risiko meningkat</div>
                     </div>
                 </div>
@@ -242,28 +244,32 @@
                     <div class="info-row">
                         <div class="info-label">Negara</div>
                         <div class="info-value text-end">
-                            {{ $selectedCountry->name ?? 'Semua Negara' }}
+                            <?php echo e($selectedCountry->name ?? 'Semua Negara'); ?>
+
                         </div>
                     </div>
 
                     <div class="info-row">
                         <div class="info-label">Wilayah</div>
                         <div class="info-value text-end">
-                            {{ $selectedCountry->region ?? '-' }}
+                            <?php echo e($selectedCountry->region ?? '-'); ?>
+
                         </div>
                     </div>
 
                     <div class="info-row">
                         <div class="info-label">Mata Uang</div>
                         <div class="info-value text-end">
-                            {{ $selectedCountry->currency_code ?? '-' }}
+                            <?php echo e($selectedCountry->currency_code ?? '-'); ?>
+
                         </div>
                     </div>
 
                     <div class="info-row">
                         <div class="info-label">Jumlah Pelabuhan</div>
                         <div class="info-value text-end">
-                            {{ $ports->count() }}
+                            <?php echo e($ports->count()); ?>
+
                         </div>
                     </div>
 
@@ -304,7 +310,7 @@
                     </div>
 
                     <span class="risk-badge risk-low" id="tablePortCounter">
-                        {{ $ports->count() }} data
+                        <?php echo e($ports->count()); ?> data
                     </span>
                 </div>
             </div>
@@ -324,8 +330,8 @@
                     </thead>
 
                     <tbody>
-                    @forelse ($ports as $port)
-                        @php
+                    <?php $__empty_1 = true; $__currentLoopData = $ports; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $port): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php
                             $statusGroup = in_array($port->status, ['Aman', 'Normal'], true)
                                 ? 'safe'
                                 : ($port->status === 'Waspada' ? 'warning' : 'alert');
@@ -337,35 +343,37 @@
                             $countryLabel = $port->country_real_name
                                 ?? $port->country_name
                                 ?? '-';
-                        @endphp
+                        ?>
 
                         <tr
                             class="port-row"
-                            data-port-id="{{ $port->id }}"
-                            data-search="{{ strtolower($port->name . ' ' . ($port->city ?? '') . ' ' . $countryLabel) }}"
+                            data-port-id="<?php echo e($port->id); ?>"
+                            data-search="<?php echo e(strtolower($port->name . ' ' . ($port->city ?? '') . ' ' . $countryLabel)); ?>"
                         >
                             <td>
                                 <i class="bi bi-anchor text-primary me-1"></i>
-                                <strong>{{ $port->name }}</strong>
+                                <strong><?php echo e($port->name); ?></strong>
                             </td>
 
-                            <td>{{ $port->city ?? '-' }}</td>
+                            <td><?php echo e($port->city ?? '-'); ?></td>
 
-                            <td>{{ $countryLabel }}</td>
+                            <td><?php echo e($countryLabel); ?></td>
 
                             <td class="port-coordinate">
-                                {{ $port->latitude ?? '-' }},
-                                {{ $port->longitude ?? '-' }}
+                                <?php echo e($port->latitude ?? '-'); ?>,
+                                <?php echo e($port->longitude ?? '-'); ?>
+
                             </td>
 
                             <td>
-                                <span class="risk-badge {{ $statusClass }}">
-                                    {{ $port->status ?? 'Normal' }}
+                                <span class="risk-badge <?php echo e($statusClass); ?>">
+                                    <?php echo e($port->status ?? 'Normal'); ?>
+
                                 </span>
                             </td>
 
                             <td>
-                                <strong>{{ $port->port_risk_score ?? 0 }}/100</strong>
+                                <strong><?php echo e($port->port_risk_score ?? 0); ?>/100</strong>
                             </td>
 
                             <td>
@@ -373,7 +381,7 @@
                                     <button
                                         type="button"
                                         class="btn btn-sm btn-outline-primary set-origin-button"
-                                        data-port-id="{{ $port->id }}"
+                                        data-port-id="<?php echo e($port->id); ?>"
                                     >
                                         <i class="bi bi-geo-alt me-1"></i>
                                         Asal
@@ -382,7 +390,7 @@
                                     <button
                                         type="button"
                                         class="btn btn-sm btn-outline-danger set-destination-button"
-                                        data-port-id="{{ $port->id }}"
+                                        data-port-id="<?php echo e($port->id); ?>"
                                     >
                                         <i class="bi bi-geo-alt-fill me-1"></i>
                                         Tujuan
@@ -390,31 +398,32 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
                             <td colspan="7" class="text-center text-muted py-5">
                                 Belum ada data pelabuhan untuk filter ini.
                             </td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
 
         <div class="footer">
-            © {{ date('Y') }} Supply Chain Management. Semua hak dilindungi.
+            © <?php echo e(date('Y')); ?> Supply Chain Management. Semua hak dilindungi.
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
     <script>
-        window.portTrackingData = {{ Illuminate\Support\Js::from($ports) }};
+        window.portTrackingData = <?php echo e(Illuminate\Support\Js::from($ports)); ?>;
     </script>
 
     <script
-        src="{{ asset('js/port.js') }}?v={{ file_exists(public_path('js/port.js')) ? filemtime(public_path('js/port.js')) : time() }}"
+        src="<?php echo e(asset('js/port.js')); ?>?v=<?php echo e(file_exists(public_path('js/port.js')) ? filemtime(public_path('js/port.js')) : time()); ?>"
     ></script>
-@endpush
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\supply-chain-management\resources\views/ports/index.blade.php ENDPATH**/ ?>

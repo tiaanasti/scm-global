@@ -1,0 +1,196 @@
+
+.port-page .port-country-filter {
+    min-width: 250px;
+}
+
+.port-page .metric-card {
+    min-height: 126px;
+}
+
+.port-page .min-w-0 {
+    min-width: 0;
+}
+
+/* Peta */
+.port-page .port-map-frame {
+    padding: 10px;
+    border-radius: 14px;
+    background: #071a2f;
+    box-shadow: 0 12px 30px rgba(2, 12, 27, 0.22);
+}
+
+.port-page #trackingMap {
+    width: 100%;
+    height: 560px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    background: #d8edf5;
+}
+
+.port-page .leaflet-control-zoom a {
+    color: #ffffff;
+    background: #0b2a4a;
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+.port-page .leaflet-control-zoom a:hover {
+    color: #ffffff;
+    background: #143a63;
+}
+
+/* Informasi rute */
+.port-page .route-summary-card {
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.port-page .route-summary-card small {
+    display: block;
+    margin-bottom: 4px;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.port-page .route-summary-card strong {
+    display: block;
+    color: #0f274c;
+    overflow-wrap: anywhere;
+}
+
+.port-page .route-distance-card {
+    border-color: #fecdd3;
+    background: #fff1f2;
+}
+
+.port-page .route-distance-card strong {
+    color: #b91c1c;
+    font-size: 20px;
+}
+
+.port-page .port-map-note {
+    margin-top: 12px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* Marker peta */
+.port-page .port-pin-wrapper,
+.port-page .port-tracking-dot-wrapper {
+    border: 0;
+    background: transparent;
+}
+
+.port-page .port-pin {
+    display: flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    background: #2563eb;
+    border: 3px solid #ffffff;
+    border-radius: 50% 50% 50% 0;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.3);
+    transform: rotate(-45deg);
+}
+
+.port-page .port-pin i {
+    font-size: 16px;
+    transform: rotate(45deg);
+}
+
+.port-page .port-tracking-dot {
+    width: 13px;
+    height: 13px;
+    background: #ef4444;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.port-page .port-map-popup {
+    min-width: 200px;
+    line-height: 1.6;
+}
+
+/* Tabel */
+.port-page .port-table-tools {
+    max-width: 100%;
+}
+
+.port-page .port-table-search {
+    min-width: 280px;
+}
+
+.port-page .port-table-wrapper {
+    max-height: 620px;
+    overflow: auto;
+}
+
+.port-page .port-table-wrapper thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    white-space: nowrap;
+    background: #f8fafc;
+}
+
+.port-page .port-table-wrapper td {
+    vertical-align: middle;
+}
+
+.port-page .port-row {
+    transition: background-color 0.18s ease;
+}
+
+.port-page .port-row.is-origin {
+    background: #eff6ff;
+}
+
+.port-page .port-row.is-destination {
+    background: #fff1f2;
+}
+
+.port-page .port-coordinate {
+    color: #64748b;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.port-page .footer {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* Responsif */
+@media (max-width: 991.98px) {
+    .port-page .port-country-form,
+    .port-page .port-country-filter {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .port-page #trackingMap {
+        height: 500px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .port-page #trackingMap {
+        height: 430px;
+    }
+
+    .port-page .port-table-tools,
+    .port-page .port-table-search {
+        width: 100%;
+        min-width: 0;
+    }
+}

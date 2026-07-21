@@ -468,5 +468,257 @@ body {
 .indicator-red .metric-value {
     color: #991b1b;
 }
+.metric-card {
+    min-height: 120px;
+    align-items: center;
+}
+
+.metric-card .metric-value {
+    word-break: break-word;
+}
+
+.info-value {
+    font-weight: 700;
+    color: #0b1f44;
+    word-break: break-word;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #64748b;
+}
+
+.card-clean {
+    max-width: 100%;
+}
+
+body {
+    overflow-x: hidden;
+    }
+    .port-page .topbar {
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .port-page .country-filter {
+        min-width: 250px;
+    }
+
+    .port-page .metric-card {
+        min-height: 126px;
+        height: 100%;
+    }
+
+    .port-page .tracking-panel {
+        background: #071a2f;
+        border-radius: 14px;
+        padding: 10px;
+        box-shadow: 0 12px 30px rgba(2, 12, 27, .22);
+    }
+
+    .port-page .tracking-map-wrap {
+        border: 1px solid rgba(255, 255, 255, .18);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #d8edf5;
+    }
+
+    .port-page #trackingMap {
+        width: 100%;
+        height: 560px;
+        background: #d8edf5;
+    }
+
+    .port-page .tracking-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .port-page .tracking-controls label {
+        display: block;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .port-page .route-info {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+    }
+
+    .port-page .route-chip {
+        flex: 1 1 220px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+
+    .port-page .route-chip small {
+        display: block;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .port-page .route-chip strong {
+        color: #0f274c;
+        overflow-wrap: anywhere;
+    }
+
+    .port-page .distance-chip {
+        background: #fff1f2;
+        border-color: #fecdd3;
+    }
+
+    .port-page .distance-chip strong {
+        color: #b91c1c;
+        font-size: 20px;
+    }
+
+    .port-page .map-note {
+        color: #64748b;
+        font-size: 13px;
+        margin-top: 12px;
+        line-height: 1.55;
+    }
+
+    .port-page .tracking-dot {
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: #ef4444;
+        border: 3px solid #ffffff;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, .20);
+    }
+
+    .port-page .tracking-dot-wrapper {
+        background: transparent;
+        border: 0;
+    }
+
+    .port-page .leaflet-control-zoom a {
+        background: #0b2a4a;
+        color: #ffffff;
+        border-bottom-color: rgba(255, 255, 255, .12);
+    }
+
+    .port-page .leaflet-control-zoom a:hover {
+        background: #143a63;
+        color: #ffffff;
+    }
+
+    .port-page .information-card {
+        height: 100%;
+    }
+
+    .port-page .information-card .recommendation-box {
+        margin-top: 20px;
+    }
+
+    .port-page .table-tools {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .port-page .table-search {
+        min-width: 280px;
+    }
+
+    .port-page .port-table-wrap {
+        max-height: 620px;
+        overflow: auto;
+    }
+
+    .port-page .port-table-wrap thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #f8fafc;
+        white-space: nowrap;
+    }
+
+    .port-page .port-table-wrap td {
+        vertical-align: middle;
+    }
+
+    .port-page .port-row {
+        transition: background-color .18s ease;
+    }
+
+    .port-page .port-row:hover {
+        background: #f8fbff;
+    }
+
+    .port-page .port-row.is-origin {
+        background: #eff6ff;
+    }
+
+    .port-page .port-row.is-destination {
+        background: #fff1f2;
+    }
+
+    .port-page .coordinate-cell {
+        white-space: nowrap;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .port-page .empty-table {
+        padding: 32px 16px;
+        text-align: center;
+        color: #64748b;
+    }
+
+    @media (max-width: 991.98px) {
+        .port-page .tracking-controls {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .port-page .country-filter,
+        .port-page .topbar form {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .port-page #trackingMap {
+            height: 500px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .port-page .tracking-controls {
+            grid-template-columns: 1fr;
+        }
+
+        .port-page #trackingMap {
+            height: 430px;
+        }
+
+        .port-page .table-search,
+        .port-page .table-tools {
+            width: 100%;
+            min-width: 0;
+        }
+   
+}
 
 }
