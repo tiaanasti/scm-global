@@ -83,6 +83,15 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | Cuaca
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/cuaca', [DashboardController::class, 'weather'])
+        ->name('weather.index');
+
+    /*
+    |--------------------------------------------------------------------------
     | Risiko
     |--------------------------------------------------------------------------
     */
@@ -150,6 +159,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/laporan', [DashboardController::class, 'reports'])
         ->name('reports.index');
+
+    Route::get('/laporan/export-csv', [DashboardController::class, 'exportReportsCsv'])
+        ->name('reports.export.csv');
 
     /*
     |--------------------------------------------------------------------------

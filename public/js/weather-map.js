@@ -1,0 +1,246 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const mapElement = document.getElementById('weather-map');
+    if (!mapElement) return;
+
+    // Safety helper to escape HTML
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '-';
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    }
+
+    // Classification Function
+    function classifyWeather(item) {
+        const status = (item.weather_status || '').toLowerCase();
+        const rainfall = parseFloat(item.rainfall || 0);
+        const windSpeed = parseFloat(item.wind_speed || 0);
+
+        if (status.includes('badai') || status.includes('thunderstorm') || status.includes('storm')) {
+            return 'Badai';
+        }
+        if (rainfall > 0 || status.includes('hujan') || status.includes('rain') || status.includes('gerimis') || status.includes('drizzle')) {
+            return 'Hujan';
+        }
+        if (windSpeed >= 20 || status.includes('angin') || status.includes('wind')) {
+            return 'Angin Kencang';
+        }
+        return 'Normal';
+    }
+
+    function getCategoryColor(category) {
+        switch (category) {
+            case 'Badai': return '#ef4444';
+            case 'Hujan': return '#3b82f6';
+            case 'Angin Kencang': return '#f59e0b';
+            case 'Normal':
+            default: return '#10b981';
+        }
+    }
+
+    function getBadgeClass(category) {
+        switch (category) {
+            case 'Badai': return 'weather-badge-badai';
+            case 'Hujan': return 'weather-badge-hujan';
+            case 'Angin Kencang': return 'weather-badge-angin';
+            case 'Normal':
+            default: return 'weather-badge-normal';
+        }
+    }
+
+    // Get Raw Data from Blade Script Tag
+    const rawData = window.weatherDataset || [];
+
+    // Filter valid coordinate items and enrich with category
+    const items = [];
+    rawData.forEach(item => {
+        const lat = parseFloat(item.latitude);
+        const lng = parseFloat(item.longitude);
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            const category = classifyWeather(item);
+            items.push({
+                ...item,
+                lat,
+                lng,
+                category
+            });
+        }
+    });
+
+    // Initialize Map
+    const map = L.map('weather-map').setView([20, 0], 2);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18
+    }).addTo(map);
+
+    // Invalidate size after load to prevent grey tile rendering
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 300);
+
+    const markers = [];
+
+    // Render Markers
+    items.forEach(item => {
+        const color = getCategoryColor(item.category);
+        const badgeClass = getBadgeClass(item.category);
+
+        const marker = L.circleMarker([item.lat, item.lng], {
+            radius: 8,
+            fillColor: color,
+            color: '#ffffff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.85
+        }).addTo(map);
+
+        const detailUrl = `/negara?country_id=${item.country_id}`;
+
+        const popupContent = `
+            <div class="weather-popup">
+                <div class="weather-popup-header d-flex justify-content-between align-items-center">
+                    <span>${escapeHtml(item.country_name)} (${escapeHtml(item.country_code)})</span>
+                    <span class="weather-badge ${badgeClass}">${escapeHtml(item.category)}</span>
+                </div>
+                <div class="small text-secondary mb-2">
+                    <div><strong>Suhu:</strong> ${item.temperature !== null ? item.temperature + ' °C' : 'Tidak tersedia'}</div>
+                    <div><strong>Curah Hujan:</strong> ${item.rainfall !== null ? item.rainfall + ' mm' : 'Tidak tersedia'}</div>
+                    <div><strong>Kecepatan Angin:</strong> ${item.wind_speed !== null ? item.wind_speed + ' km/h' : 'Tidak tersedia'}</div>
+                    <div><strong>Status:</strong> ${escapeHtml(item.weather_status || 'Tidak tersedia')}</div>
+                    <div><strong>Pembaruan:</strong> ${escapeHtml(item.reported_at || '-')}</div>
+                </div>
+                <a href="${detailUrl}" class="btn btn-sm btn-primary w-100 mt-1">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Lihat Negara
+                </a>
+            </div>
+        `;
+
+        marker.bindPopup(popupContent, { className: 'weather-popup' });
+
+        markers.push({
+            marker,
+            item
+        });
+    });
+
+    // DOM Elements for Filtering & Summary
+    const searchInput = document.getElementById('weather-search-input');
+    const categorySelect = document.getElementById('weather-category-select');
+    const resetBtn = document.getElementById('weather-reset-btn');
+
+    const summaryTotal = document.getElementById('metric-total');
+    const summaryNormal = document.getElementById('metric-normal');
+    const summaryHujan = document.getElementById('metric-hujan');
+    const summaryBadaiAngin = document.getElementById('metric-badai-angin');
+
+    const tableBody = document.getElementById('weather-table-body');
+
+    // Update Metrics & Table based on active filter
+    function filterAndRender() {
+        const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+        const selectedCat = categorySelect ? categorySelect.value : 'all';
+
+        let countTotal = 0;
+        let countNormal = 0;
+        let countHujan = 0;
+        let countBadaiAngin = 0;
+
+        const filteredItems = [];
+        let matchedMarkerToPan = null;
+
+        markers.forEach(({ marker, item }) => {
+            const matchesSearch = !query || item.country_name.toLowerCase().includes(query) || item.country_code.toLowerCase().includes(query);
+            const matchesCat = selectedCat === 'all' || item.category === selectedCat;
+
+            if (matchesSearch && matchesCat) {
+                if (!map.hasLayer(marker)) {
+                    marker.addTo(map);
+                }
+                filteredItems.push(item);
+                if (query && !matchedMarkerToPan) {
+                    matchedMarkerToPan = marker;
+                }
+
+                countTotal++;
+                if (item.category === 'Normal') countNormal++;
+                else if (item.category === 'Hujan') countHujan++;
+                else if (item.category === 'Angin Kencang' || item.category === 'Badai') countBadaiAngin++;
+            } else {
+                if (map.hasLayer(marker)) {
+                    map.removeLayer(marker);
+                }
+            }
+        });
+
+        // If specific search matched, pan to it & open popup
+        if (query && matchedMarkerToPan) {
+            map.setView(matchedMarkerToPan.getLatLng(), 5);
+            matchedMarkerToPan.openPopup();
+        }
+
+        // Update Summary Cards
+        if (summaryTotal) summaryTotal.textContent = countTotal;
+        if (summaryNormal) summaryNormal.textContent = countNormal;
+        if (summaryHujan) summaryHujan.textContent = countHujan;
+        if (summaryBadaiAngin) summaryBadaiAngin.textContent = countBadaiAngin;
+
+        // Render Table
+        if (!tableBody) return;
+        tableBody.innerHTML = '';
+
+        if (filteredItems.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        Data cuaca tidak ditemukan.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        filteredItems.forEach(item => {
+            const tr = document.createElement('tr');
+            const badgeClass = getBadgeClass(item.category);
+            const detailUrl = `/negara?country_id=${item.country_id}`;
+
+            tr.innerHTML = `
+                <td>
+                    <span class="fw-bold">${escapeHtml(item.country_name)}</span>
+                    <span class="badge bg-secondary ms-1">${escapeHtml(item.country_code)}</span>
+                </td>
+                <td>
+                    <span class="weather-badge ${badgeClass}">${escapeHtml(item.category)}</span>
+                </td>
+                <td>${item.temperature !== null ? item.temperature + ' °C' : '<span class="text-muted">Tidak tersedia</span>'}</td>
+                <td>${item.wind_speed !== null ? item.wind_speed + ' km/h' : '<span class="text-muted">Tidak tersedia</span>'}</td>
+                <td>${item.rainfall !== null ? item.rainfall + ' mm' : '<span class="text-muted">Tidak tersedia</span>'}</td>
+                <td class="small text-muted">${escapeHtml(item.reported_at || '-')}</td>
+                <td>
+                    <a href="${detailUrl}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> Detail
+                    </a>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // Event Listeners
+    if (searchInput) searchInput.addEventListener('input', filterAndRender);
+    if (categorySelect) categorySelect.addEventListener('change', filterAndRender);
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            if (searchInput) searchInput.value = '';
+            if (categorySelect) categorySelect.value = 'all';
+            map.setView([20, 0], 2);
+            filterAndRender();
+        });
+    }
+
+    // Initial Render
+    filterAndRender();
+});

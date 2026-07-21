@@ -1,59 +1,142 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# GLOBAL SUPPLY CHAIN RISK INTELLIGENCE 
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi Web Monitoring dan Analisis Platform Intelijen Risiko Rantai Pasok Global (Global Supply Chain Risk Intelligence)  berbasis **Laravel 12**. Sistem ini mengintegrasikan berbagai data eksternal secara real-time maupun berkala—seperti cuaca global, indikator ekonomi World Bank, pergerakan kurs mata uang, berita sentimen industri, serta direktori pelabuhan dunia—untuk memberikan kalkulasi skor risiko komposit bagi keputusan rantai pasok.
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Dashboard Interactive**: Visualisasi peta distribusi pelabuhan, ringkasan cuaca global, metrik risiko utama, dan grafik tren.
+- **Monitoring Cuaca Global**: Integrasi Open-Meteo API dengan peta Leaflet interaktif untuk memantau suhu, curah hujan, dan kecepatan angin per negara.
+- **Analisis Risiko Negara**: Perhitungan skor risiko komposit berdasarkan parameter Cuaca, Inflasi, Kurs, dan Sentimen Berita.
+- **Direktori & Tracking Pelabuhan**: Peta pelabuhan dunia dari World Port Index beserta kalkulasi skor risiko pelabuhan.
+- **Monitoring Kurs Mata Uang**: Integrasi ExchangeRate-API untuk memantau fluktuasi nilai tukar terhadap USD.
+- **Analisis Sentimen Berita**: GNews API caching dengan analisis otomatis kata positif/negatif.
+- **Perbandingan Negara & Watchlist**: Fitur benchmarking antar negara dan penyaringan watchlist per pengguna.
+- **Laporan & Export Data**: Ringkasan laporan sistem dengan dukungan Cetak Laporan (`window.print()`) dan **Export CSV** (UTF-8 BOM compatible untuk Excel).
+- **Panel Admin & CRUD AJAX**: Pengelolaan User, Negara, Pelabuhan, dan Artikel secara AJAX tanpa full page reload.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+## Teknologi & Framework
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- **Backend Core**: PHP ^8.2, Laravel ^12.0
+- **Database**: MySQL
+- **Frontend UI & Styling**: HTML5, JavaScript (ES6), Bootstrap 5, Bootstrap Icons
+- **Visualisasi & Peta**: Leaflet.js (OpenStreetMap), Chart.js
+- **Teknik Interaksi**: Asynchronous AJAX (Fetch API)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## Laravel Sponsors
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## External API yang Terintegrasi
 
-### Premium Partners
+1. **REST Countries API**: Data dasar negara, bendera, koordinat, dan mata uang.
+2. **Open-Meteo API**: Data cuaca terkini (suhu, curah hujan, kecepatan angin).
+3. **World Bank API**: Indikator ekonomi tahunan (GDP, inflasi, populasi).
+4. **ExchangeRate-API**: Value kurs nilai tukar mata uang real-time.
+5. **GNews API**: Cache berita terkait isu rantai pasok dan ekonomi.
+6. **World Port Index (NGA)**: Direktori lokasi dan status pelabuhan dunia.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+> *Catatan*: Fitur sinkronisasi API memerlukan koneksi internet aktif.
 
-## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Laravel Scheduler
 
-## Code of Conduct
+Sinkronisasi otomatis dijalankan lewat Laravel Scheduler dan command Artisan berikut:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan scm:sync-weather
+php artisan scm:sync-currency
+php artisan scm:sync-news
+php artisan scm:recalculate-risks
+```
 
-## Security Vulnerabilities
+Jadwal otomatis:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- Cuaca Open-Meteo: setiap jam menit `00`
+- Kurs ExchangeRate API: setiap jam menit `10`
+- Berita GNews: setiap 3 jam menit `20`
+- Risk scoring negara: setiap jam menit `30`
 
-## License
+Pada Windows/Laragon, jalankan scheduler dari folder project:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan schedule:work
+```
+
+Terminal harus tetap terbuka. Jika terminal ditutup, scheduler ikut berhenti. Tombol sinkronisasi manual di Panel Admin tetap tersedia untuk pembaruan manual.
+
+World Bank, REST Countries, dan World Port Index tetap dijalankan manual dari Panel Admin sesuai kebutuhan data master.
+
+
+## Struktur Role & Hak Akses
+
+1. **Admin**:
+   - Memiliki akses penuh ke halaman internal dan Panel Admin (`/admin`).
+   - Melakukan CRUD User, Negara, Pelabuhan, dan Artikel.
+   - Menjalankan perintah sinkronisasi API external dan kalkulasi ulang skor risiko.
+   - Dilindungi proteksi anti-self-delete dan proteksi minimal 1 akun Admin aktif.
+2. **User (Pengguna Biasa)**:
+   - Mengakses Dashboard, Halaman Negara, Risiko, Cuaca, Pelabuhan, Kurs, Berita, Perbandingan, Watchlist, dan Laporan.
+   - Mengelola Watchlist pribadi dan mengunduh Laporan CSV.
+   - Dilarang mengakses `/admin` atau fungsi manajemen sistem.
+
+### Cara Menjalankan Project:
+
+1. **Clone repository & masuk ke direktori project**:
+   ```bash
+   cd supply-chain-management
+   ```
+
+2. **Install dependensi PHP**:
+   ```bash
+   composer install
+   ```
+
+3. **Salin file lingkungan (.env)**:
+   ```bash
+   copy .env.example .env
+   ```
+
+4. **Generate Application Key**:
+   ```bash
+   php artisan key:generate
+   ```
+
+5. **Konfigurasi Database di file `.env`**:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=scm
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+6. **Jalankan Migration & Seeder Data Awal**:
+   ```bash
+   php artisan migrate --seed
+   ```
+
+7. **Konfigurasi API Key (Opsional di `.env`)**:
+   ```env
+   GNEWS_API_KEY=your_gnews_api_key_here
+   ```
+
+   Sesuaikan juga URL/key lain di `.env` jika menggunakan provider API berbeda. Jangan menuliskan API key asli di repository.
+
+   Setelah mengganti key atau konfigurasi API, jalankan:
+   ```bash
+   php artisan optimize:clear
+   ```
+
+8. **Jalankan Dev Server**:
+   ```bash
+   php artisan serve
+   ```
+   Buka browser di `http://127.0.0.1:8000`.
+
+---
+
+## Catatan Keamanan
+
+- File `.env` terdaftar pada `.gitignore` dan **TIDAK BUKAN** bagian dari repository versi publik.
+- Saat demonstrasi final, disarankan mengatur `APP_DEBUG=false` di file `.env`.

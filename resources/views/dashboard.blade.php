@@ -3,418 +3,396 @@
 @section('title', 'Dashboard Risiko Rantai Pasok Global - Supply Chain Management')
 
 @section('content')
+    @php
+        $freshnessClass = $dataFreshness === 'Data terbaru'
+            ? 'risk-low'
+            : ($dataFreshness === 'Perlu diperbarui'
+                ? 'risk-medium'
+                : 'risk-high');
+
+        $formatDateTime = function ($value) {
+            return $value
+                ? \Carbon\Carbon::parse($value)
+                    ->timezone('Asia/Jakarta')
+                    ->translatedFormat('d F Y H:i') . ' WIB'
+                : '-';
+        };
+
+        $riskClass = function ($score) {
+            return $score >= 60
+                ? 'risk-high'
+                : ($score >= 35
+                    ? 'risk-medium'
+                    : 'risk-low');
+        };
+    @endphp
+
+    {{-- TOPBAR --}}
     <div class="topbar">
         <div class="page-title">
             <h1>Dashboard Risiko Rantai Pasok Global</h1>
-            <p>Monitoring risiko ekonomi, cuaca, kurs, berita, dan pelabuhan secara global.</p>
+
+            <p>
+                Monitoring risiko negara, cuaca, kurs, berita,
+                dan pelabuhan dari data sistem.
+            </p>
         </div>
 
-        <form action="{{ route('dashboard') }}" method="GET">
-            <select name="country_id" class="form-select country-select" onchange="this.form.submit()">
-                @foreach ($countries as $item)
-                    <option value="{{ $item->id }}" {{ $selectedCountryId == $item->id ? 'selected' : '' }}>
-                        {{ $item->name }}
-                    </option>
-                @endforeach
-            </select>
-        </form>
+        <div class="scm-topbar-tools">
+            <div class="scm-search">
+                <i class="bi bi-search"></i>
+
+                <input
+                    type="search"
+                    class="form-control"
+                    placeholder="Cari negara yang tersedia..."
+                    aria-label="Cari negara"
+                    disabled
+                >
+            </div>
+
+            <span class="risk-badge {{ $freshnessClass }}">
+                {{ $dataFreshness }}
+            </span>
+
+            <div class="dropdown">
+                <button
+                    class="profile-chip border-0"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                >
+                    <span class="user-avatar">
+                        <i class="bi bi-person-fill"></i>
+                    </span>
+
+                    <span class="text-start">
+                        <span class="d-block fw-bold">
+                            {{ auth()->user()->name }}
+                        </span>
+
+                        <small class="scm-muted">
+                            {{ ucfirst(auth()->user()->role ?? 'user') }}
+                        </small>
+                    </span>
+
+                    <i class="bi bi-chevron-down scm-muted"></i>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <form
+                            action="{{ route('logout') }}"
+                            method="POST"
+                        >
+                            @csrf
+
+                            <button
+                                type="submit"
+                                class="dropdown-item"
+                            >
+                                <i class="bi bi-box-arrow-right me-2"></i>
+                                Keluar
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 
-    <div class="content">
-        <!-- LIVE API DATA -->
-        <div class="card-clean mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
-                <div>
-                    <div class="section-title mb-1">Live Data dari REST API</div>
-                    <div class="metric-sub">
-                        Data ini dimuat menggunakan JavaScript Fetch API dari endpoint /api/summary dan /api/risk.
-                    </div>
+    {{-- DASHBOARD CONTENT --}}
+    <div class="dashboard-content">
+
+        {{-- HEADER DATA --}}
+        <div class="scm-page-header mb-3">
+            <div>
+                <div class="scm-muted">
+                    Terakhir diperbarui
                 </div>
 
-                <span class="risk-badge risk-low" id="apiStatus">
-                    Loading API...
-                </span>
+                <strong>
+                    {{ $formatDateTime($latestDataAt) }}
+                </strong>
             </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="indicator-box indicator-blue">
-                        <div class="metric-label">Total Negara</div>
-                        <div class="metric-value" id="apiCountriesCount">-</div>
-                        <div class="metric-sub">Dari /api/summary</div>
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <div class="indicator-box indicator-green">
-                        <div class="metric-label">Total Pelabuhan</div>
-                        <div class="metric-value" id="apiPortsCount">-</div>
-                        <div class="metric-sub">Dari /api/summary</div>
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <div class="indicator-box indicator-orange">
-                        <div class="metric-label">Risiko Tinggi</div>
-                        <div class="metric-value" id="apiHighRiskCount">-</div>
-                        <div class="metric-sub">Negara risiko tinggi</div>
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <div class="indicator-box indicator-red">
-                        <div class="metric-label">Berita Negatif</div>
-                        <div class="metric-value" id="apiNegativeNewsCount">-</div>
-                        <div class="metric-sub">Sinyal risiko berita</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section-title">Ranking Risiko dari API</div>
-
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                    <tr>
-                        <th>Negara</th>
-                        <th>Cuaca</th>
-                        <th>Inflasi</th>
-                        <th>Kurs</th>
-                        <th>Berita</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                    </tr>
-                    </thead>
-                    <tbody id="apiRiskTable">
-                    <tr>
-                        <td colspan="7" class="text-muted">Memuat data dari API...</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+            <form
+                action="{{ route('dashboard') }}"
+                method="GET"
+            >
+                <select
+                    name="country_id"
+                    class="form-select country-select"
+                    onchange="this.form.submit()"
+                >
+                    @foreach ($countries as $item)
+                        <option
+                            value="{{ $item->id }}"
+                            {{ (string) $selectedCountryId === (string) $item->id ? 'selected' : '' }}
+                        >
+                            {{ $item->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </form>
         </div>
 
-        <!-- METRICS -->
-        <div class="row g-3 mb-4">
-            <div class="col-xl col-md-4 col-sm-6">
-                <div class="card-clean metric-card">
-                    <div class="metric-icon icon-blue">
-                        <i class="bi bi-bar-chart-line"></i>
-                    </div>
-                    <div>
-                        <div class="metric-label">GDP</div>
-                        <div class="metric-value">
-                            ${{ number_format(($economic->gdp ?? 0) / 1000000000000, 2) }}T
+        {{-- KPI --}}
+        <div class="row g-3 mb-3">
+            <div class="col-xl-3 col-md-6">
+                <div class="scm-kpi-card">
+                    <div class="scm-kpi-copy">
+                        <div class="metric-label">
+                            Negara Dipantau
                         </div>
-                        <div class="metric-sub">Data ekonomi negara</div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="col-xl col-md-4 col-sm-6">
-                <div class="card-clean metric-card">
-                    <div class="metric-icon icon-green">
-                        <i class="bi bi-percent"></i>
-                    </div>
-                    <div>
-                        <div class="metric-label">Inflasi</div>
-                        <div class="metric-value">{{ $economic->inflation_rate ?? 0 }}%</div>
-                        <div class="metric-sub">Perubahan harga tahunan</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl col-md-4 col-sm-6">
-                <div class="card-clean metric-card">
-                    <div class="metric-icon icon-blue">
-                        <i class="bi bi-cloud-sun"></i>
-                    </div>
-                    <div>
-                        <div class="metric-label">Cuaca Saat Ini</div>
                         <div class="metric-value">
-                            {{ number_format($weather->temperature ?? 0, 2) }}°C
+                            {{ number_format($summary['monitored_countries_count'] ?? 0) }}
                         </div>
-                        <div class="metric-sub">{{ $weather->weather_status ?? '-' }}</div>
+
+                        <div class="metric-sub">
+                            {{ ($summary['watched_countries_count'] ?? 0) > 0
+                                ? 'Negara unik di Watchlist'
+                                : 'Fallback data negara tersedia'
+                            }}
+                        </div>
+                    </div>
+
+                    <div class="scm-kpi-icon icon-teal">
+                        <i class="bi bi-globe2"></i>
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl col-md-4 col-sm-6">
-                <div class="card-clean metric-card">
-                    <div class="metric-icon icon-purple">
+            <div class="col-xl-3 col-md-6">
+                <div class="scm-kpi-card">
+                    <div class="scm-kpi-copy">
+                        <div class="metric-label">
+                            Risiko Tinggi
+                        </div>
+
+                        <div class="metric-value">
+                            {{ number_format($riskDistribution['high'] ?? 0) }}
+                        </div>
+
+                        <div class="metric-sub">
+                            Berdasarkan skor terbaru
+                        </div>
+                    </div>
+
+                    <div class="scm-kpi-icon icon-coral">
+                        <i class="bi bi-shield-exclamation"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="scm-kpi-card">
+                    <div class="scm-kpi-copy">
+                        <div class="metric-label">
+                            Gangguan Pengiriman
+                        </div>
+
+                        <div class="metric-value">
+                            {{ number_format($summary['shipping_disruptions_count'] ?? 0) }}
+                        </div>
+
+                        <div class="metric-sub">
+                            Pelabuhan Waspada, Siaga, atau Darurat
+                        </div>
+                    </div>
+
+                    <div class="scm-kpi-icon icon-blue">
+                        <i class="bi bi-anchor"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="scm-kpi-card">
+                    <div class="scm-kpi-copy">
+                        <div class="metric-label">
+                            Kurs USD/{{ $currency->target_currency ?? '-' }}
+                        </div>
+
+                        <div class="metric-value">
+                            {{ number_format((float) ($currency->exchange_rate ?? 0), 2) }}
+                        </div>
+
+                        <div class="metric-sub">
+                            Perubahan
+                            {{ number_format((float) ($currency->change_percentage ?? 0), 2) }}%
+                        </div>
+                    </div>
+
+                    <div class="scm-kpi-icon icon-green">
                         <i class="bi bi-currency-exchange"></i>
                     </div>
-                    <div>
-                        <div class="metric-label">Kurs USD/{{ $currency->target_currency ?? '-' }}</div>
-                        <div class="metric-value">
-                            {{ number_format($currency->exchange_rate ?? 0, 2) }}
-                        </div>
-                        <div class="metric-sub">Perubahan {{ $currency->change_percentage ?? 0 }}%</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl col-md-4 col-sm-6">
-                <div class="card-clean metric-card">
-                    <div class="metric-icon icon-red">
-                        <i class="bi bi-shield-check"></i>
-                    </div>
-                    <div>
-                        <div class="metric-label">Skor Risiko</div>
-                        <div class="metric-value">
-                            {{ $risk->total_score ?? 0 }}<span style="font-size: 16px;">/100</span>
-                        </div>
-                        <div class="metric-sub" style="color: #f59e0b; font-weight: 700;">
-                            {{ $risk->risk_level ?? '-' }}
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- DETAIL CUACA API -->
-        <div class="card-clean mb-4">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                <div class="section-title mb-0">Detail Data Cuaca API</div>
-                <span class="risk-badge risk-low">Sumber: Open-Meteo API</span>
-            </div>
+        {{-- PETA DAN INSIGHT --}}
+        <div class="row g-3 mb-3">
 
-            <div class="row g-3">
-                <div class="col-lg-3 col-md-6">
-                    <div class="indicator-box indicator-blue">
-                        <div class="metric-label">Suhu</div>
-                        <div class="metric-value">{{ number_format($weather->temperature ?? 0, 2) }}°C</div>
-                        <div class="metric-sub">{{ $weather->weather_status ?? '-' }}</div>
-                    </div>
-                </div>
+            {{-- PETA --}}
+            <div class="col-xl-8">
+                <div class="scm-map-card">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <div>
+                            <div class="scm-section-title mb-1">
+                                Peta Risiko Pelabuhan Global
+                            </div>
 
-                <div class="col-lg-3 col-md-6">
-                    <div class="indicator-box indicator-green">
-                        <div class="metric-label">Curah Hujan</div>
-                        <div class="metric-value">{{ number_format($weather->rainfall ?? 0, 2) }} mm</div>
-                        <div class="metric-sub">Data dari weather_reports</div>
-                    </div>
-                </div>
+                            <div class="map-legend">
+                                <span>
+                                    <span
+                                        class="legend-dot"
+                                        style="background:#237C7E"
+                                    ></span>
+                                    Rendah
+                                </span>
 
-                <div class="col-lg-3 col-md-6">
-                    <div class="indicator-box indicator-orange">
-                        <div class="metric-label">Kecepatan Angin</div>
-                        <div class="metric-value">{{ number_format($weather->wind_speed ?? 0, 2) }}</div>
-                        <div class="metric-sub">km/jam</div>
-                    </div>
-                </div>
+                                <span>
+                                    <span
+                                        class="legend-dot"
+                                        style="background:#D99A2B"
+                                    ></span>
+                                    Sedang
+                                </span>
 
-                <div class="col-lg-3 col-md-6">
-                    <div class="indicator-box indicator-purple">
-                        <div class="metric-label">Terakhir Sinkron</div>
-                        <div class="info-value" style="font-size: 15px;">
-                            {{ $weather->reported_at ? \Carbon\Carbon::parse($weather->reported_at)->timezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}
-                        </div>
-                        <div class="metric-sub">Open-Meteo API</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- CHARTS -->
-        <div class="row g-4 mb-4">
-            <div class="col-lg-7">
-                <div class="card-clean">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="section-title mb-0">Tren Risiko</div>
-                        <span class="risk-badge risk-low">{{ $riskTrend->count() }} data</span>
-                    </div>
-
-                    @if ($riskTrend->isNotEmpty())
-                        <canvas id="dashboardRiskTrendChart" height="135"></canvas>
-                    @else
-                        <p class="text-muted mb-0">Data historis belum tersedia</p>
-                    @endif
-                </div>
-            </div>
-
-            <div class="col-lg-5">
-                <div class="card-clean">
-                    <div class="section-title">Komponen Risiko</div>
-
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <canvas id="riskChart" height="190"></canvas>
-
-                            <div class="risk-score-box mt-2">
-                                <div class="risk-number">{{ $risk->total_score ?? 0 }}</div>
-                                <div style="color: #64748b;">/100</div>
-                                <div class="risk-level">{{ $risk->risk_level ?? '-' }}</div>
+                                <span>
+                                    <span
+                                        class="legend-dot"
+                                        style="background:#E76F51"
+                                    ></span>
+                                    Tinggi
+                                </span>
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <div class="risk-row">
-                                <div class="risk-row-top">
-                                    <span><i class="bi bi-circle-fill text-primary"></i> Cuaca</span>
-                                    <strong>{{ $risk->weather_score ?? 0 }}%</strong>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-primary" style="width: {{ $risk->weather_score ?? 0 }}%"></div>
-                                </div>
-                            </div>
-
-                            <div class="risk-row">
-                                <div class="risk-row-top">
-                                    <span><i class="bi bi-circle-fill text-success"></i> Inflasi</span>
-                                    <strong>{{ $risk->inflation_score ?? 0 }}%</strong>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-success" style="width: {{ $risk->inflation_score ?? 0 }}%"></div>
-                                </div>
-                            </div>
-
-                            <div class="risk-row">
-                                <div class="risk-row-top">
-                                    <span><i class="bi bi-circle-fill text-warning"></i> Kurs</span>
-                                    <strong>{{ $risk->currency_score ?? 0 }}%</strong>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-warning" style="width: {{ $risk->currency_score ?? 0 }}%"></div>
-                                </div>
-                            </div>
-
-                            <div class="risk-row">
-                                <div class="risk-row-top">
-                                    <span><i class="bi bi-circle-fill" style="color:#8b5cf6;"></i> Berita</span>
-                                    <strong>{{ $risk->news_score ?? 0 }}%</strong>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar" style="width: {{ $risk->news_score ?? 0 }}%; background:#8b5cf6;"></div>
-                                </div>
-                            </div>
-                        </div>
+                        <span class="risk-badge risk-low">
+                            {{ $allPorts->count() }} marker
+                        </span>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- MAP AND COUNTRY INFO -->
-        <div class="row g-4 mb-4">
-            <div class="col-lg-7">
-                <div class="card-clean">
-                    <div class="section-title">Peta Pelabuhan Global</div>
                     <div id="map"></div>
                 </div>
             </div>
 
-            <div class="col-lg-5">
-                <div class="card-clean">
-                    <div class="section-title">Ringkasan Negara: {{ $country->name ?? '-' }}</div>
-
-                    <table class="table table-borderless">
-                        <tr>
-                            <td class="text-muted">Ibu Kota</td>
-                            <td class="fw-bold text-end">{{ $country->capital ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Wilayah</td>
-                            <td class="fw-bold text-end">{{ $country->region ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Mata Uang</td>
-                            <td class="fw-bold text-end">{{ $country->currency_code ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Populasi</td>
-                            <td class="fw-bold text-end">{{ number_format($economic->population ?? 0) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Ekspor</td>
-                            <td class="fw-bold text-end">${{ number_format(($economic->exports ?? 0) / 1000000000, 2) }}B</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Impor</td>
-                            <td class="fw-bold text-end">${{ number_format(($economic->imports ?? 0) / 1000000000, 2) }}B</td>
-                        </tr>
-                    </table>
-
-                    <div class="recommendation-box mt-3">
-                        <div class="recommendation-icon">
-                            <i class="bi bi-shield-check"></i>
+            {{-- INSIGHT DAN RANKING --}}
+            <div class="col-xl-4">
+               <div class="scm-card h-auto mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="scm-section-title mb-0">
+                            Insight Utama
                         </div>
-                        <strong>Rekomendasi Sistem</strong>
-                        <p class="mt-2 mb-0">
-                            {{ $risk->recommendation ?? 'Belum ada rekomendasi untuk negara ini.' }}
-                        </p>
+
+                        <a
+                            href="{{ route('news.index', ['country_id' => $selectedCountryId]) }}"
+                            class="small fw-bold text-decoration-none"
+                        >
+                            Lihat Berita
+                        </a>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- NEWS AND PORTS -->
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="card-clean">
-                    <div class="section-title">Berita Terbaru</div>
+                    @forelse ($dashboardInsights->take(4) as $insight)
+                        <a
+                            href="{{ $insight['url'] }}"
+                            class="insight-item d-flex gap-3 text-decoration-none"
+                        >
+                            <span
+                                class="insight-icon {{
+                                    $insight['level'] === 'high'
+                                        ? 'risk-high'
+                                        : ($insight['level'] === 'medium'
+                                            ? 'risk-medium'
+                                            : 'risk-low')
+                                }}"
+                            >
+                                <i class="bi {{ $insight['icon'] }}"></i>
+                            </span>
 
-                    @forelse ($news as $item)
-                        <div class="news-item d-flex gap-3">
-                            <div class="news-icon">
-                                @if ($item->category === 'Logistik')
-                                    <i class="bi bi-cloud-rain"></i>
-                                @elseif ($item->category === 'Ekonomi')
-                                    <i class="bi bi-graph-up-arrow"></i>
-                                @else
-                                    <i class="bi bi-newspaper"></i>
-                                @endif
-                            </div>
+                            <span class="d-block">
+                                <span class="insight-title">
+                                    {{ $insight['title'] }}
+                                </span>
 
-                            <div>
-                                <div class="d-flex align-items-center gap-2 mb-1">
-                                    <span class="badge-soft {{ $item->sentiment === 'Negative' ? 'badge-high' : ($item->sentiment === 'Positive' ? 'badge-low' : 'badge-medium') }}">
-                                        {{ $item->category ?? 'Umum' }}
-                                    </span>
-                                    <small class="text-muted">{{ $item->sentiment }}</small>
-                                </div>
+                                <span class="insight-desc d-block">
+                                    {{ \Illuminate\Support\Str::limit($insight['description'], 105) }}
+                                </span>
 
-                                <div class="news-title">{{ $item->title }}</div>
-                                <div class="news-desc">{{ $item->description }}</div>
-                            </div>
-                        </div>
+                                <small class="scm-muted">
+                                    {{ $formatDateTime($insight['time']) }}
+                                </small>
+                            </span>
+                        </a>
                     @empty
-                        <p class="text-muted mb-0">Belum ada berita untuk negara ini.</p>
+                        <div class="scm-empty-state">
+                            Belum ada insight terbaru dari data sistem.
+                        </div>
                     @endforelse
                 </div>
-            </div>
 
-            <div class="col-lg-6">
-                <div class="card-clean">
-                    <div class="section-title">Pelabuhan Utama</div>
+               <div class="scm-card h-auto">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="scm-section-title mb-0">
+                            Peringkat Risiko Negara
+                        </div>
+
+                        <a
+                            href="{{ route('risks.index') }}"
+                            class="small fw-bold text-decoration-none"
+                        >
+                            Lihat Semua
+                        </a>
+                    </div>
 
                     <div class="table-responsive">
-                        <table class="table align-middle">
+                        <table class="table scm-table align-middle">
                             <thead>
                             <tr>
-                                <th>Pelabuhan</th>
-                                <th>Kota</th>
-                                <th>Status</th>
-                                <th>Risiko</th>
+                                <th>#</th>
+                                <th>Negara</th>
+                                <th>Skor</th>
                             </tr>
                             </thead>
+
                             <tbody>
-                            @forelse ($ports as $port)
+                            @forelse ($riskRanking as $index => $row)
                                 <tr>
                                     <td>
-                                        <i class="bi bi-pin-map-fill text-primary"></i>
-                                        <strong>{{ $port->name }}</strong>
+                                        {{ $index + 1 }}
                                     </td>
-                                    <td>{{ $port->city ?? '-' }}</td>
+
                                     <td>
-                                        <span class="badge-soft {{ $port->status === 'Aman' ? 'badge-low' : ($port->status === 'Waspada' ? 'badge-high' : 'badge-medium') }}">
-                                            {{ $port->status }}
+                                        <strong>
+                                            {{ $row->country_name }}
+                                        </strong>
+
+                                        <div class="scm-muted">
+                                            {{ $row->risk_level ?? '-' }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="risk-badge {{
+                                                $riskClass($row->total_score ?? 0)
+                                            }}"
+                                        >
+                                            {{ number_format((float) ($row->total_score ?? 0), 0) }}
                                         </span>
                                     </td>
-                                    <td>{{ $port->port_risk_score }}/100</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-muted">Belum ada data pelabuhan.</td>
+                                    <td
+                                        colspan="3"
+                                        class="text-muted text-center py-3"
+                                    >
+                                        Belum ada data risiko.
+                                    </td>
                                 </tr>
                             @endforelse
                             </tbody>
@@ -424,91 +402,411 @@
             </div>
         </div>
 
+        {{-- GRAFIK DAN RINGKASAN --}}
+        <div class="row g-3">
+
+            {{-- TREN RISIKO --}}
+            <div class="col-xl-6">
+                <div class="scm-chart-card">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <div class="scm-section-title mb-0">
+                            Tren Risiko: {{ $country->name ?? '-' }}
+                        </div>
+
+                        <span class="risk-badge risk-low">
+                            {{ $riskTrend->count() }} data
+                        </span>
+                    </div>
+
+                    @if ($riskTrend->isNotEmpty())
+                        <div class="dashboard-chart-wrap dashboard-trend-chart">
+                            <canvas id="dashboardRiskTrendChart"></canvas>
+                        </div>
+                    @else
+                        <div class="scm-empty-state">
+                            Data historis risiko belum tersedia.
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- DISTRIBUSI RISIKO --}}
+            <div class="col-xl-3 col-lg-6">
+                <div class="scm-chart-card">
+                    <div class="scm-section-title">
+                        Distribusi Risiko
+                    </div>
+
+                    <div class="dashboard-chart-wrap dashboard-doughnut-chart">
+                        <canvas id="riskDistributionChart"></canvas>
+                    </div>
+
+                    <div class="mt-3 d-grid gap-2">
+                        <span class="scm-muted">
+                            Rendah:
+                            {{ $riskDistribution['low'] ?? 0 }}
+                        </span>
+
+                        <span class="scm-muted">
+                            Sedang:
+                            {{ $riskDistribution['medium'] ?? 0 }}
+                        </span>
+
+                        <span class="scm-muted">
+                            Tinggi:
+                            {{ $riskDistribution['high'] ?? 0 }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- RINGKASAN NEGARA --}}
+            <div class="col-xl-3 col-lg-6">
+                <div class="scm-card">
+                    <div class="scm-section-title">
+                        Ringkasan {{ $country->name ?? '-' }}
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            Skor risiko
+                        </span>
+
+                        <span class="info-value">
+                            {{ number_format((float) ($risk->total_score ?? 0), 0) }}/100
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            Status
+                        </span>
+
+                        <span class="info-value">
+                            {{ $risk->risk_level ?? '-' }}
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            Cuaca
+                        </span>
+
+                        <span class="info-value">
+                            {{ $weather->weather_status ?? '-' }}
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            Berita
+                        </span>
+
+                        <span class="info-value">
+                            {{ $news->count() }}
+                        </span>
+                    </div>
+
+                    <div class="recommendation-box mt-3">
+                        {{ $risk->recommendation
+                            ?? 'Belum ada rekomendasi untuk negara ini.'
+                        }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- FOOTER --}}
         <div class="footer">
-            © {{ date('Y') }} Supply Chain Management. Semua hak dilindungi.
+            Sumber data mengikuti cache database project.
+            Terakhir diperbarui:
+            {{ $formatDateTime($latestDataAt) }}.
         </div>
     </div>
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/api-dashboard.js') }}?v={{ time() }}"></script>
 <script>
-    const riskScore = Number(@json($risk->total_score ?? 0));
-    const weatherScore = Number(@json($risk->weather_score ?? 0));
-    const inflationScore = Number(@json($risk->inflation_score ?? 0));
-    const currencyScore = Number(@json($risk->currency_score ?? 0));
-    const newsScore = Number(@json($risk->news_score ?? 0));
+    document.addEventListener('DOMContentLoaded', function () {
+        const riskTrendCanvas =
+            document.getElementById('dashboardRiskTrendChart');
 
-    @if ($riskTrend->isNotEmpty())
-    const riskTrendLabels = @json($riskTrend->pluck('score_date'));
-    const riskTrendValues = @json($riskTrend->pluck('total_score'));
+        const riskDistributionCanvas =
+            document.getElementById('riskDistributionChart');
 
-    new Chart(document.getElementById('dashboardRiskTrendChart'), {
-        type: 'line',
-        data: {
-            labels: riskTrendLabels,
-            datasets: [{
-                label: 'Skor Risiko',
-                data: riskTrendValues,
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.10)',
-                pointBackgroundColor: '#2563eb',
-                pointRadius: 4,
-                borderWidth: 3,
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: { legend: { display: true } },
-            scales: { y: { beginAtZero: true, max: 100 } }
+        /*
+         * Grafik tren risiko
+         */
+        if (riskTrendCanvas) {
+            if (
+                window.dashboardRiskTrendChart &&
+                typeof window.dashboardRiskTrendChart.destroy === 'function'
+            ) {
+                window.dashboardRiskTrendChart.destroy();
+            }
+
+            const trendLabels = @json(
+                $riskTrend
+                    ->pluck('score_date')
+                    ->map(function ($date) {
+                        return $date
+                            ? \Carbon\Carbon::parse($date)->format('d M Y')
+                            : '-';
+                    })
+                    ->values()
+            );
+
+            const trendValues = @json(
+                $riskTrend
+                    ->pluck('total_score')
+                    ->map(function ($score) {
+                        return (float) $score;
+                    })
+                    ->values()
+            );
+
+            window.dashboardRiskTrendChart = new Chart(
+                riskTrendCanvas,
+                {
+                    type: 'line',
+
+                    data: {
+                        labels: trendLabels,
+
+                        datasets: [
+                            {
+                                label: 'Skor Risiko',
+                                data: trendValues,
+                                borderColor: '#237C7E',
+                                backgroundColor: 'rgba(35, 124, 126, 0.12)',
+                                pointBackgroundColor: '#237C7E',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                borderWidth: 3,
+                                tension: 0.35,
+                                fill: true
+                            }
+                        ]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+
+                            tooltip: {
+                                displayColors: false,
+
+                                callbacks: {
+                                    label: function (context) {
+                                        const value =
+                                            Number(context.raw || 0);
+
+                                        return `Skor Risiko: ${value.toFixed(0)}/100`;
+                                    }
+                                }
+                            }
+                        },
+
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+
+                                ticks: {
+                                    maxRotation: 0,
+                                    autoSkip: true,
+                                    maxTicksLimit: 7
+                                }
+                            },
+
+                            y: {
+                                beginAtZero: true,
+                                min: 0,
+                                max: 100,
+
+                                ticks: {
+                                    stepSize: 20
+                                },
+
+                                grid: {
+                                    color: 'rgba(16, 42, 51, 0.08)'
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        }
+
+        /*
+         * Grafik distribusi risiko
+         */
+        if (riskDistributionCanvas) {
+            if (
+                window.riskDistributionChart &&
+                typeof window.riskDistributionChart.destroy === 'function'
+            ) {
+                window.riskDistributionChart.destroy();
+            }
+
+            window.riskDistributionChart = new Chart(
+                riskDistributionCanvas,
+                {
+                    type: 'doughnut',
+
+                    data: {
+                        labels: [
+                            'Risiko Rendah',
+                            'Risiko Sedang',
+                            'Risiko Tinggi'
+                        ],
+
+                        datasets: [
+                            {
+                                data: [
+                                    Number(@json($riskDistribution['low'] ?? 0)),
+                                    Number(@json($riskDistribution['medium'] ?? 0)),
+                                    Number(@json($riskDistribution['high'] ?? 0))
+                                ],
+
+                                backgroundColor: [
+                                    '#237C7E',
+                                    '#D99A2B',
+                                    '#E76F51'
+                                ],
+
+                                hoverBackgroundColor: [
+                                    '#1D6769',
+                                    '#C08624',
+                                    '#D85E41'
+                                ],
+
+                                borderColor: '#ffffff',
+                                borderWidth: 3
+                            }
+                        ]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '64%',
+
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const value =
+                                            Number(context.raw || 0);
+
+                                        return `${context.label}: ${value} negara`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        }
+
+        /*
+         * Peta risiko pelabuhan
+         */
+        const mapElement = document.getElementById('map');
+
+        if (mapElement && typeof L !== 'undefined') {
+            if (window.dashboardPortMap) {
+                window.dashboardPortMap.remove();
+            }
+
+            window.dashboardPortMap = L.map(
+                mapElement,
+                {
+                    scrollWheelZoom: false
+                }
+            ).setView([5, 110], 2);
+
+            L.tileLayer(
+                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                {
+                    attribution:
+                        '&copy; OpenStreetMap contributors'
+                }
+            ).addTo(window.dashboardPortMap);
+
+            const allPorts = @json($allPorts);
+
+            const escapeHtml = function (value) {
+                return String(value ?? '-')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#039;');
+            };
+
+            allPorts.forEach(function (port) {
+                const latitude = Number(port.latitude);
+                const longitude = Number(port.longitude);
+
+                if (
+                    !Number.isFinite(latitude) ||
+                    !Number.isFinite(longitude)
+                ) {
+                    return;
+                }
+
+                const score =
+                    Number(port.port_risk_score || 0);
+
+                const color =
+                    score >= 60
+                        ? '#E76F51'
+                        : (score >= 35
+                            ? '#D99A2B'
+                            : '#237C7E');
+
+                L.circleMarker(
+                    [latitude, longitude],
+                    {
+                        radius: score >= 60 ? 7 : 5,
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.78,
+                        weight: 2
+                    }
+                )
+                    .addTo(window.dashboardPortMap)
+                    .bindPopup(`
+                        <strong>${escapeHtml(port.name)}</strong><br>
+                        Negara: ${escapeHtml(port.country_name)}<br>
+                        Kota: ${escapeHtml(port.city)}<br>
+                        Status: ${escapeHtml(port.status)}<br>
+                        Risiko: ${score.toFixed(0)}/100
+                    `);
+            });
+
+            setTimeout(function () {
+                window.dashboardPortMap.invalidateSize();
+            }, 300);
         }
     });
-    @endif
-
-    new Chart(document.getElementById('riskChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Cuaca', 'Inflasi', 'Kurs', 'Berita'],
-            datasets: [{
-                data: [weatherScore, inflationScore, currencyScore, newsScore],
-                backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#8b5cf6'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            cutout: '68%',
-            maintainAspectRatio: true,
-            plugins: { legend: { display: false } }
-        }
-    });
-
-    const map = L.map('map').setView([5, 110], 2);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'OpenStreetMap'
-    }).addTo(map);
-
-    const allPorts = @json($allPorts);
-
-    allPorts.forEach(function(port) {
-        if (port.latitude && port.longitude) {
-            L.marker([port.latitude, port.longitude])
-                .addTo(map)
-                .bindPopup(`
-                    <strong>${port.name}</strong><br>
-                    Negara: ${port.country_name}<br>
-                    Kota: ${port.city ?? '-'}<br>
-                    Status: ${port.status}<br>
-                    Risiko: ${port.port_risk_score}/100
-                `);
-        }
-    });
-
-    setTimeout(function () {
-        map.invalidateSize();
-    }, 300);
 </script>
 @endpush

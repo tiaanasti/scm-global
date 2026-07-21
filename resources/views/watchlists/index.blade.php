@@ -145,7 +145,7 @@
                     </thead>
                     <tbody>
                     @forelse ($watchlistRows as $item)
-                        <tr>
+                        <tr id="watchlist-country-{{ $item->country_id }}">
                             <td>
                                 <strong>{{ $item->country_name }}</strong>
                                 <div class="metric-sub">{{ $item->currency_code }}</div>

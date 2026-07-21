@@ -1,0 +1,168 @@
+document.addEventListener('DOMContentLoaded', function () {
+    // Event delegation on submit
+    document.addEventListener('submit', async function (event) {
+        const form = event.target;
+        if (!form.classList.contains('data-ajax-add-form')) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const submitBtn = form.querySelector('[type="submit"]') || form.querySelector('button:not([type="button"])');
+        if (!submitBtn) return;
+
+        // Store original button state
+        const originalBtnContent = submitBtn.innerHTML;
+        const originalBtnDisabled = submitBtn.disabled;
+
+        // Disable button and show spinner
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Menyimpan...';
+
+        try {
+            const formData = new FormData(form);
+            const action = form.getAttribute('action') || window.location.href;
+            const method = form.getAttribute('method') || 'POST';
+
+            const response = await fetch(action, {
+                method: method,
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.status === 422) {
+                const data = await response.json();
+                showAdminAlert(data.message || 'Validasi gagal.', 'danger', data.errors);
+                return;
+            }
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                showAdminAlert(data.message || 'Gagal menambahkan data.', 'danger');
+                return;
+            }
+
+            const data = await response.json();
+            
+            // Show success alert
+            showAdminAlert(data.message || 'Data berhasil ditambahkan.', 'success');
+
+            // Reset form
+            form.reset();
+
+            // Refresh section
+            const sectionId = form.getAttribute('data-refresh-section');
+            if (sectionId) {
+                await refreshAdminSection(sectionId);
+            }
+
+        } catch (error) {
+            console.error('AJAX Form Error:', error);
+            showAdminAlert('Terjadi kesalahan pada sistem.', 'danger');
+        } finally {
+            // Restore button state
+            submitBtn.disabled = originalBtnDisabled;
+            submitBtn.innerHTML = originalBtnContent;
+        }
+    });
+
+    async function refreshAdminSection(sectionId) {
+        try {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.hash = '';
+
+            const response = await fetch(currentUrl.toString(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal memperbarui tampilan.');
+            }
+
+            const html = await response.text();
+            const parser = new DOMParser();
+            const documentResult = parser.parseFromString(html, 'text/html');
+
+            const currentSection = document.getElementById(sectionId);
+            const updatedSection = documentResult.getElementById(sectionId);
+
+            if (!currentSection || !updatedSection) {
+                throw new Error('Bagian data tidak ditemukan.');
+            }
+
+            // Replace the section
+            currentSection.replaceWith(updatedSection);
+
+            // Sync the country select dropdown in the add port form (if it exists)
+            const currentSelect = document.querySelector('select[name="country_id"]');
+            const updatedSelect = documentResult.querySelector('select[name="country_id"]');
+            if (currentSelect && updatedSelect) {
+                currentSelect.replaceWith(updatedSelect);
+            }
+
+            // Scroll to the updated section
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        } catch (error) {
+            console.error('Refresh Section Error:', error);
+            showAdminAlert('Tampilan gagal diperbarui otomatis, silakan muat ulang halaman.', 'danger');
+        }
+    }
+
+    function showAdminAlert(message, type = 'success', errors = null) {
+        const alertContainer = document.getElementById('adminAjaxAlert');
+        if (!alertContainer) return;
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.setAttribute('role', 'alert');
+
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = message;
+        alertDiv.appendChild(messageSpan);
+
+        if (errors) {
+            const errorList = document.createElement('ul');
+            errorList.className = 'mb-0 mt-2';
+            for (const field in errors) {
+                if (errors.hasOwnProperty(field)) {
+                    errors[field].forEach(errText => {
+                        const li = document.createElement('li');
+                        li.textContent = errText;
+                        errorList.appendChild(li);
+                    });
+                }
+            }
+            alertDiv.appendChild(errorList);
+        }
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'btn-close';
+        closeBtn.setAttribute('data-bs-dismiss', 'alert');
+        closeBtn.setAttribute('aria-label', 'Close');
+        alertDiv.appendChild(closeBtn);
+
+        alertContainer.innerHTML = '';
+        alertContainer.appendChild(alertDiv);
+
+        if (type === 'success') {
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 150);
+                }
+            }, 5000);
+        }
+    }
+});

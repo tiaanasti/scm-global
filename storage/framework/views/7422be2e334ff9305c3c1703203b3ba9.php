@@ -2,6 +2,17 @@
 
 <?php $__env->startSection('title', 'Panel Admin - Supply Chain Management'); ?>
 
+<?php $__env->startPush('styles'); ?>
+<style>
+    #users-section,
+    #countries-section,
+    #ports-section,
+    #articles-section {
+        scroll-margin-top: 24px;
+    }
+</style>
+<?php $__env->stopPush(); ?>
+
 <?php $__env->startSection('content'); ?>
 <div class="topbar">
     <div class="page-title">
@@ -14,6 +25,7 @@
 </div>
 
 <div class="content">
+    <div id="adminAjaxAlert"></div>
 
     
     <?php if(session('success')): ?>
@@ -70,6 +82,11 @@
                     Ambil data terbaru Open-Meteo, ExchangeRate-API,
                     dan GNews untuk negara yang terdapat di Watchlist,
                     kemudian hitung ulang skor risiko.
+                </div>
+
+                <div class="metric-sub mt-2">
+                    Sinkronisasi otomatis dijalankan melalui Laravel Scheduler.
+                    Tombol ini digunakan untuk pembaruan manual.
                 </div>
             </div>
 
@@ -237,7 +254,7 @@
             Tambah Negara Baru
         </div>
 
-        <form action="<?php echo e(route('admin.countries.store')); ?>" method="POST">
+        <form action="<?php echo e(route('admin.countries.store')); ?>" method="POST" class="data-ajax-add-form" data-refresh-section="countries-section">
             <?php echo csrf_field(); ?>
 
             <div class="row g-3">
@@ -592,7 +609,7 @@
     </div>
 
     
-    <div class="card-clean mb-4">
+    <div id="users-section" class="card-clean mb-4">
         <div class="section-title">
             Kelola User
         </div>
@@ -600,7 +617,8 @@
         <form
             action="<?php echo e(route('admin.users.store')); ?>"
             method="POST"
-            class="mb-4"
+            class="mb-4 data-ajax-add-form"
+            data-refresh-section="users-section"
         >
             <?php echo csrf_field(); ?>
 
@@ -692,6 +710,28 @@
             </div>
         </form>
 
+        <form action="<?php echo e(route('admin.index')); ?>#users-section" method="GET" class="mb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6 col-lg-4">
+                    <input
+                        type="text"
+                        name="user_search"
+                        class="form-control"
+                        placeholder="Cari nama atau email user..."
+                        value="<?php echo e(request('user_search')); ?>"
+                    >
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i> Cari
+                    </button>
+                    <a href="<?php echo e(route('admin.index')); ?>#users-section" class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+
         <div class="table-responsive">
             <table class="table align-middle">
                 <thead>
@@ -742,7 +782,7 @@
                             <div class="d-flex gap-2 flex-wrap">
                                 <a
                                     href="<?php echo e(route('admin.users.edit', $user->id)); ?>"
-                                    class="btn btn-sm btn-outline-primary"
+                                    class="btn btn-sm btn-outline-primary ajax-edit-btn"
                                 >
                                     <i class="bi bi-pencil-square me-1"></i>
                                     Edit
@@ -752,7 +792,9 @@
                                     <form
                                         action="<?php echo e(route('admin.users.destroy', $user->id)); ?>"
                                         method="POST"
-                                        onsubmit="return confirm('Yakin ingin menghapus user ini?')"
+                                        class="data-ajax-delete-form"
+                                        data-refresh-section="users-section"
+                                        data-confirm="Yakin ingin menghapus user ini?"
                                     >
                                         <?php echo csrf_field(); ?>
                                         <?php echo method_field('DELETE'); ?>
@@ -772,12 +814,21 @@
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
                         <td colspan="5" class="text-center text-muted py-4">
-                            Belum ada user.
+                            Data tidak ditemukan.
                         </td>
                     </tr>
                 <?php endif; ?>
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-3">
+            <?php echo e($users
+                ->onEachSide(1)
+                ->withQueryString()
+                ->fragment('users-section')
+                ->links('pagination::bootstrap-5')); ?>
+
         </div>
     </div>
 
@@ -846,10 +897,32 @@
     </div>
 
     
-    <div class="card-clean mb-4">
+    <div id="countries-section" class="card-clean mb-4">
         <div class="section-title">
             Dataset Negara dan Risiko
         </div>
+
+        <form action="<?php echo e(route('admin.index')); ?>#countries-section" method="GET" class="mb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6 col-lg-4">
+                    <input
+                        type="text"
+                        name="country_search"
+                        class="form-control"
+                        placeholder="Cari negara, kode, region, atau mata uang..."
+                        value="<?php echo e(request('country_search')); ?>"
+                    >
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i> Cari
+                    </button>
+                    <a href="<?php echo e(route('admin.index')); ?>#countries-section" class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
 
         <div class="table-responsive">
             <table class="table align-middle">
@@ -906,7 +979,7 @@
                             <div class="d-flex gap-2 flex-wrap">
                                 <a
                                     href="<?php echo e(route('admin.countries.edit', $country->id)); ?>"
-                                    class="btn btn-sm btn-outline-primary"
+                                    class="btn btn-sm btn-outline-primary ajax-edit-btn"
                                 >
                                     <i class="bi bi-pencil-square me-1"></i>
                                     Edit
@@ -915,7 +988,9 @@
                                 <form
                                     action="<?php echo e(route('admin.countries.destroy', $country->id)); ?>"
                                     method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus negara ini? Semua data terkait negara ini juga akan dihapus.')"
+                                    class="data-ajax-delete-form"
+                                    data-refresh-section="countries-section"
+                                    data-confirm="Yakin ingin menghapus negara ini? Semua data terkait negara ini juga akan dihapus."
                                 >
                                     <?php echo csrf_field(); ?>
                                     <?php echo method_field('DELETE'); ?>
@@ -934,12 +1009,21 @@
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
                         <td colspan="6" class="text-center text-muted py-4">
-                            Belum ada data negara.
+                            Data tidak ditemukan.
                         </td>
                     </tr>
                 <?php endif; ?>
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-3">
+            <?php echo e($countries
+                ->onEachSide(1)
+                ->withQueryString()
+                ->fragment('countries-section')
+                ->links('pagination::bootstrap-5')); ?>
+
         </div>
     </div>
 
@@ -954,7 +1038,7 @@
             halaman Pelabuhan dan peta tracking.
         </div>
 
-        <form action="<?php echo e(route('admin.ports.store')); ?>" method="POST">
+        <form action="<?php echo e(route('admin.ports.store')); ?>" method="POST" class="data-ajax-add-form" data-refresh-section="ports-section">
             <?php echo csrf_field(); ?>
 
             <div class="row g-3">
@@ -1001,7 +1085,7 @@
                             Pilih negara
                         </option>
 
-                        <?php $__currentLoopData = $countries; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $country): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php $__currentLoopData = $countryOptions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $country): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <option
                                 value="<?php echo e($country->id); ?>"
                                 <?php echo e((string) old('country_id') === (string) $country->id ? 'selected' : ''); ?>
@@ -1118,7 +1202,7 @@
     </div>
 
     
-    <div class="card-clean mb-4">
+    <div id="ports-section" class="card-clean mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
             <div>
                 <div class="section-title mb-1">
@@ -1132,9 +1216,61 @@
             </div>
 
             <span class="risk-badge risk-low">
-                <?php echo e($ports->count()); ?> pelabuhan
+                <?php echo e($ports->total()); ?> pelabuhan
             </span>
         </div>
+
+        <form action="<?php echo e(route('admin.index')); ?>#ports-section" method="GET" class="mb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4 col-lg-3">
+                    <input
+                        type="text"
+                        name="port_search"
+                        class="form-control"
+                        placeholder="Cari pelabuhan, kota, negara..."
+                        value="<?php echo e(request('port_search')); ?>"
+                    >
+                </div>
+                <div class="col-md-3 col-lg-3">
+                    <select name="port_country_id" class="form-select">
+                        <option value="">Semua Negara</option>
+                        <?php $__currentLoopData = $countryOptions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $countryOpt): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option
+                                value="<?php echo e($countryOpt->id); ?>"
+                                <?php echo e((string) request('port_country_id') === (string) $countryOpt->id ? 'selected' : ''); ?>
+
+                            >
+                                <?php echo e($countryOpt->name); ?>
+
+                            </option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
+                </div>
+                <div class="col-md-3 col-lg-3">
+                    <select name="port_status" class="form-select">
+                        <option value="">Semua Status</option>
+                        <?php $__currentLoopData = ['Aman', 'Normal', 'Waspada', 'Siaga', 'Darurat']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $statusOpt): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option
+                                value="<?php echo e($statusOpt); ?>"
+                                <?php echo e(request('port_status') === $statusOpt ? 'selected' : ''); ?>
+
+                            >
+                                <?php echo e($statusOpt); ?>
+
+                            </option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i> Cari
+                    </button>
+                    <a href="<?php echo e(route('admin.index')); ?>#ports-section" class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
 
         <div class="table-responsive">
             <table class="table align-middle">
@@ -1201,7 +1337,7 @@
                             <div class="d-flex gap-2 flex-wrap">
                                 <a
                                     href="<?php echo e(route('admin.ports.edit', $port->id)); ?>"
-                                    class="btn btn-sm btn-outline-primary"
+                                    class="btn btn-sm btn-outline-primary ajax-edit-btn"
                                 >
                                     <i class="bi bi-pencil-square me-1"></i>
                                     Edit
@@ -1210,7 +1346,9 @@
                                 <form
                                     action="<?php echo e(route('admin.ports.destroy', $port->id)); ?>"
                                     method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus pelabuhan <?php echo e(addslashes($port->name)); ?>?')"
+                                    class="data-ajax-delete-form"
+                                    data-refresh-section="ports-section"
+                                    data-confirm="Yakin ingin menghapus pelabuhan <?php echo e(addslashes($port->name)); ?>?"
                                 >
                                     <?php echo csrf_field(); ?>
                                     <?php echo method_field('DELETE'); ?>
@@ -1229,12 +1367,21 @@
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
                         <td colspan="5" class="text-center text-muted py-4">
-                            Belum ada data pelabuhan.
+                            Data tidak ditemukan.
                         </td>
                     </tr>
                 <?php endif; ?>
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-3">
+            <?php echo e($ports
+                ->onEachSide(1)
+                ->withQueryString()
+                ->fragment('ports-section')
+                ->links('pagination::bootstrap-5')); ?>
+
         </div>
     </div>
 
@@ -1244,7 +1391,7 @@
             Tambah Artikel Analisis
         </div>
 
-        <form action="<?php echo e(route('admin.articles.store')); ?>" method="POST">
+        <form action="<?php echo e(route('admin.articles.store')); ?>" method="POST" class="data-ajax-add-form" data-refresh-section="articles-section">
             <?php echo csrf_field(); ?>
 
             <div class="row g-3">
@@ -1326,10 +1473,32 @@
     </div>
 
     
-    <div class="card-clean mb-4">
+    <div id="articles-section" class="card-clean mb-4">
         <div class="section-title">
             Artikel Analisis
         </div>
+
+        <form action="<?php echo e(route('admin.index')); ?>#articles-section" method="GET" class="mb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6 col-lg-4">
+                    <input
+                        type="text"
+                        name="article_search"
+                        class="form-control"
+                        placeholder="Cari judul, kategori, atau status artikel..."
+                        value="<?php echo e(request('article_search')); ?>"
+                    >
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i> Cari
+                    </button>
+                    <a href="<?php echo e(route('admin.index')); ?>#articles-section" class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
 
         <?php $__empty_1 = true; $__currentLoopData = $articles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $article): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="news-item">
@@ -1360,7 +1529,7 @@
                 <div class="d-flex gap-2 flex-wrap">
                     <a
                         href="<?php echo e(route('admin.articles.edit', $article->id)); ?>"
-                        class="btn btn-sm btn-outline-primary"
+                        class="btn btn-sm btn-outline-primary ajax-edit-btn"
                     >
                         <i class="bi bi-pencil-square me-1"></i>
                         Edit
@@ -1369,7 +1538,9 @@
                     <form
                         action="<?php echo e(route('admin.articles.destroy', $article->id)); ?>"
                         method="POST"
-                        onsubmit="return confirm('Yakin ingin menghapus artikel ini?')"
+                        class="data-ajax-delete-form"
+                        data-refresh-section="articles-section"
+                        data-confirm="Yakin ingin menghapus artikel ini?"
                     >
                         <?php echo csrf_field(); ?>
                         <?php echo method_field('DELETE'); ?>
@@ -1386,9 +1557,18 @@
             </div>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <p class="text-muted">
-                Belum ada artikel.
+                Data tidak ditemukan.
             </p>
         <?php endif; ?>
+
+        <div class="mt-3">
+            <?php echo e($articles
+                ->onEachSide(1)
+                ->withQueryString()
+                ->fragment('articles-section')
+                ->links('pagination::bootstrap-5')); ?>
+
+        </div>
     </div>
 
     
@@ -1436,6 +1616,30 @@
         © <?php echo e(date('Y')); ?> Supply Chain Management.
         Semua hak dilindungi.
     </div>
+
+    <!-- Admin Edit Modal -->
+    <div class="modal fade" id="adminEditModal" tabindex="-1" aria-labelledby="adminEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminEditModalLabel">Edit Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="adminEditModalBody">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<?php $__env->stopSection(); ?> 
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script src="<?php echo e(asset('js/admin-ajax.js')); ?>?v=<?php echo e(file_exists(public_path('js/admin-ajax.js')) ? filemtime(public_path('js/admin-ajax.js')) : time()); ?>"></script>
+<?php $__env->stopPush(); ?>
+
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\supply-chain-management\resources\views/admin/index.blade.php ENDPATH**/ ?>

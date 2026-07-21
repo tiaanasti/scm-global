@@ -484,10 +484,10 @@
                 <div class="card-clean section-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="section-title mb-0">Tren GDP per Tahun</div>
-                        <span class="risk-badge risk-low">{{ $gdpTrend->count() }} data</span>
+                        <span class="risk-badge risk-low">{{ isset($gdpTrend) ? $gdpTrend->count() : 0 }} data</span>
                     </div>
 
-                    @if ($gdpTrend->isNotEmpty())
+                    @if (isset($gdpTrend) && $gdpTrend->isNotEmpty())
                         <canvas id="countryGdpTrendChart" height="120"></canvas>
                     @else
                         <p class="text-muted mb-0">Data historis belum tersedia</p>
@@ -499,10 +499,10 @@
                 <div class="card-clean section-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="section-title mb-0">Tren Inflasi per Tahun</div>
-                        <span class="risk-badge risk-low">{{ $inflationTrend->count() }} data</span>
+                        <span class="risk-badge risk-low">{{ isset($inflationTrend) ? $inflationTrend->count() : 0 }} data</span>
                     </div>
 
-                    @if ($inflationTrend->isNotEmpty())
+                    @if (isset($inflationTrend) && $inflationTrend->isNotEmpty())
                         <canvas id="countryInflationTrendChart" height="120"></canvas>
                     @else
                         <p class="text-muted mb-0">Data historis belum tersedia</p>
@@ -742,7 +742,7 @@
             });
         }
 
-        @if ($gdpTrend->isNotEmpty())
+        @if (isset($gdpTrend) && $gdpTrend->isNotEmpty())
         const gdpTrendLabels = @json($gdpTrend->pluck('year')->map(fn ($year) => (string) $year));
         const gdpTrendValues = @json($gdpTrend->pluck('gdp')->map(fn ($value) => (float) $value));
 
@@ -791,7 +791,7 @@
         });
         @endif
 
-        @if ($inflationTrend->isNotEmpty())
+        @if (isset($inflationTrend) && $inflationTrend->isNotEmpty())
         const inflationTrendLabels = @json($inflationTrend->pluck('year')->map(fn ($year) => (string) $year));
         const inflationTrendValues = @json($inflationTrend->pluck('inflation_rate')->map(fn ($value) => (float) $value));
 

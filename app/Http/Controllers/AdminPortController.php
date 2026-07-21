@@ -13,7 +13,7 @@ class AdminPortController extends Controller
     /**
      * Menyimpan pelabuhan baru dari Panel Admin.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $validated = $request->validate(
             [
@@ -69,6 +69,12 @@ class AdminPortController extends Controller
                 ->first();
 
             if (!$country) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Negara yang dipilih tidak ditemukan.',
+                    ], 422);
+                }
                 return back()
                     ->withInput()
                     ->with('error', 'Negara yang dipilih tidak ditemukan.');
@@ -89,14 +95,27 @@ class AdminPortController extends Controller
                 ]);
             });
 
+            $message = 'Pelabuhan "' . $validated['name'] . '" berhasil ditambahkan.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                ], 201);
+            }
+
             return redirect()
                 ->route('admin.index')
-                ->with(
-                    'success',
-                    'Pelabuhan "' . $validated['name'] . '" berhasil ditambahkan.'
-                );
+                ->with('success', $message);
         } catch (Throwable $exception) {
             report($exception);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pelabuhan gagal ditambahkan. Periksa kembali data yang dimasukkan.',
+                ], 500);
+            }
 
             return back()
                 ->withInput()
@@ -131,6 +150,14 @@ class AdminPortController extends Controller
             ->orderBy('name')
             ->get();
 
+        if (request()->expectsJson()) {
+            $html = view(
+                'admin.partials.edit-port',
+                compact('port', 'countries')
+            )->render();
+            return response()->json(['html' => $html]);
+        }
+
         return view(
             'admin.ports.edit',
             compact('port', 'countries')
@@ -140,13 +167,16 @@ class AdminPortController extends Controller
     /**
      * Memperbarui data pelabuhan.
      */
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id)
     {
         $port = DB::table('ports')
             ->where('id', $id)
             ->first();
 
         if (!$port) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Data pelabuhan tidak ditemukan.'], 404);
+            }
             return redirect()
                 ->route('admin.index')
                 ->with('error', 'Data pelabuhan tidak ditemukan.');
@@ -206,6 +236,9 @@ class AdminPortController extends Controller
                 ->first();
 
             if (!$country) {
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Negara yang dipilih tidak ditemukan.'], 422);
+                }
                 return back()
                     ->withInput()
                     ->with('error', 'Negara yang dipilih tidak ditemukan.');
@@ -233,20 +266,30 @@ class AdminPortController extends Controller
                     ]);
             });
 
+            $msg = 'Data pelabuhan "' . $validated['name'] . '" berhasil diperbarui.';
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $msg]);
+            }
+
             return redirect()
                 ->route('admin.index')
                 ->with(
                     'success',
-                    'Data pelabuhan "' . $validated['name'] . '" berhasil diperbarui.'
+                    $msg
                 );
         } catch (Throwable $exception) {
             report($exception);
+
+            $msg = 'Data pelabuhan gagal diperbarui. Periksa kembali data yang dimasukkan.';
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $msg], 500);
+            }
 
             return back()
                 ->withInput()
                 ->with(
                     'error',
-                    'Data pelabuhan gagal diperbarui. Periksa kembali data yang dimasukkan.'
+                    $msg
                 );
         }
     }
@@ -254,7 +297,7 @@ class AdminPortController extends Controller
     /**
      * Menghapus pelabuhan.
      */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(int $id)
     {
         $port = DB::table('ports')
             ->select('id', 'name')
@@ -262,9 +305,13 @@ class AdminPortController extends Controller
             ->first();
 
         if (!$port) {
+            $msg = 'Data pelabuhan tidak ditemukan.';
+            if (request()->expectsJson()) {
+                return response()->json(['message' => $msg], 404);
+            }
             return redirect()
                 ->route('admin.index')
-                ->with('error', 'Data pelabuhan tidak ditemukan.');
+                ->with('error', $msg);
         }
 
         try {
@@ -274,21 +321,23 @@ class AdminPortController extends Controller
                     ->delete();
             });
 
+            $msg = 'Pelabuhan "' . $port->name . '" berhasil dihapus.';
+            if (request()->expectsJson()) {
+                return response()->json(['message' => $msg], 200);
+            }
             return redirect()
                 ->route('admin.index')
-                ->with(
-                    'success',
-                    'Pelabuhan "' . $port->name . '" berhasil dihapus.'
-                );
+                ->with('success', $msg);
         } catch (Throwable $exception) {
             report($exception);
 
+            $msg = 'Pelabuhan gagal dihapus karena masih digunakan oleh data lain.';
+            if (request()->expectsJson()) {
+                return response()->json(['message' => $msg], 500);
+            }
             return redirect()
                 ->route('admin.index')
-                ->with(
-                    'error',
-                    'Pelabuhan gagal dihapus karena masih digunakan oleh data lain.'
-                );
+                ->with('error', $msg);
         }
     }
 

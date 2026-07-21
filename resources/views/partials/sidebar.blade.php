@@ -1,81 +1,181 @@
-<aside class="sidebar">
-    <div class="brand">
-        <div class="brand-icon">
+<div class="sidebar-inner">
+    {{-- BRAND --}}
+    <a
+        href="{{ route('dashboard') }}"
+        class="brand"
+        aria-label="Kembali ke Dashboard"
+    >
+        <span class="brand-icon" aria-hidden="true">
             <i class="bi bi-box-seam"></i>
-        </div>
-        <div>
-            Supply Chain<br>Management
-        </div>
+        </span>
+
+        <span class="brand-text">
+            Supply Chain<br>
+            Management
+        </span>
+    </a>
+
+    {{-- MENU NAVIGASI --}}
+    <nav class="sidebar-nav" aria-label="Navigasi utama">
+        <a
+            href="{{ route('dashboard') }}"
+            class="nav-link-custom {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+            @if (request()->routeIs('dashboard')) aria-current="page" @endif
+        >
+            <i class="bi bi-house-door-fill" aria-hidden="true"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a
+            href="{{ route('countries.index') }}"
+            class="nav-link-custom {{ request()->routeIs('countries.*') ? 'active' : '' }}"
+            @if (request()->routeIs('countries.*')) aria-current="page" @endif
+        >
+            <i class="bi bi-globe2" aria-hidden="true"></i>
+            <span>Negara</span>
+        </a>
+
+        <a
+            href="{{ route('weather.index') }}"
+            class="nav-link-custom {{ request()->routeIs('weather.*') ? 'active' : '' }}"
+            @if (request()->routeIs('weather.*')) aria-current="page" @endif
+        >
+            <i class="bi bi-cloud-sun-fill" aria-hidden="true"></i>
+            <span>Cuaca Global</span>
+        </a>
+
+        <a
+            href="{{ route('risks.index') }}"
+            class="nav-link-custom {{ request()->routeIs('risks.*') ? 'active' : '' }}"
+            @if (request()->routeIs('risks.*')) aria-current="page" @endif
+        >
+            <i class="bi bi-shield-check" aria-hidden="true"></i>
+            <span>Risiko</span>
+        </a>
+
+        <a
+            href="{{ route('ports.index') }}"
+            class="nav-link-custom {{ request()->routeIs('ports.*') ? 'active' : '' }}"
+            @if (request()->routeIs('ports.*')) aria-current="page" @endif
+        >
+            <i class="bi bi-pin-map-fill" aria-hidden="true"></i>
+            <span>Pelabuhan</span>
+        </a>
+
+        <a
+            href="{{ route('currencies.index') }}"
+            class="nav-link-custom {{ request()->routeIs('currencies.*') ? 'active' : '' }}"
+            @if (request()->routeIs('currencies.*')) aria-current="page" @endif
+        >
+            <i class="bi bi-currency-dollar" aria-hidden="true"></i>
+            <span>Kurs</span>
+        </a>
+
+        <a
+            href="{{ route('news.index') }}"
+            class="nav-link-custom {{ request()->routeIs('news.*') ? 'active' : '' }}"
+            @if (request()->routeIs('news.*')) aria-current="page" @endif
+        >
+            <i class="bi bi-newspaper" aria-hidden="true"></i>
+            <span>Berita</span>
+        </a>
+
+        <a
+            href="{{ route('comparisons.index') }}"
+            class="nav-link-custom {{ request()->routeIs('comparisons.*') ? 'active' : '' }}"
+            @if (request()->routeIs('comparisons.*')) aria-current="page" @endif
+        >
+            <i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i>
+            <span>Perbandingan</span>
+        </a>
+
+        <a
+            href="{{ route('watchlists.index') }}"
+            class="nav-link-custom {{ request()->routeIs('watchlists.*') ? 'active' : '' }}"
+            @if (request()->routeIs('watchlists.*')) aria-current="page" @endif
+        >
+            <i class="bi bi-star-fill" aria-hidden="true"></i>
+            <span>Watchlist</span>
+        </a>
+
+        <a
+            href="{{ route('reports.index') }}"
+            class="nav-link-custom {{ request()->routeIs('reports.*') ? 'active' : '' }}"
+            @if (request()->routeIs('reports.*')) aria-current="page" @endif
+        >
+            <i class="bi bi-file-earmark-bar-graph-fill" aria-hidden="true"></i>
+            <span>Laporan</span>
+        </a>
+
+        @auth
+            @if ((auth()->user()->role ?? 'user') === 'admin')
+                <a
+                    href="{{ route('admin.index') }}"
+                    class="nav-link-custom {{ request()->routeIs('admin.*') ? 'active' : '' }}"
+                    @if (request()->routeIs('admin.*')) aria-current="page" @endif
+                >
+                    <i class="bi bi-person-gear" aria-hidden="true"></i>
+                    <span>Admin</span>
+                </a>
+            @endif
+        @endauth
+    </nav>
+
+    {{-- INFORMASI SISTEM --}}
+    <div class="sidebar-intel">
+        <strong>Supply Chain Intelligence</strong>
+
+        <span>
+            Pantau risiko global dan dukung pengambilan keputusan.
+        </span>
     </div>
 
-    <a href="{{ route('dashboard') }}" class="nav-link-custom {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-        <i class="bi bi-house-door-fill"></i>
-        <span>Dashboard</span>
-    </a>
-
-    <a href="{{ route('countries.index') }}" class="nav-link-custom {{ request()->routeIs('countries.index') ? 'active' : '' }}">
-        <i class="bi bi-globe2"></i>
-        <span>Negara</span>
-    </a>
-
-    <a href="{{ route('risks.index') }}" class="nav-link-custom {{ request()->routeIs('risks.index') ? 'active' : '' }}">
-        <i class="bi bi-shield-check"></i>
-        <span>Risiko</span>
-    </a>
-
-    <a href="{{ route('ports.index') }}" class="nav-link-custom {{ request()->routeIs('ports.index') ? 'active' : '' }}">
-        <i class="bi bi-pin-map-fill"></i>
-        <span>Pelabuhan</span>
-    </a>
-
-    <a href="{{ route('currencies.index') }}" class="nav-link-custom {{ request()->routeIs('currencies.index') ? 'active' : '' }}">
-        <i class="bi bi-currency-dollar"></i>
-        <span>Kurs</span>
-    </a>
-
-    <a href="{{ route('news.index') }}" class="nav-link-custom {{ request()->routeIs('news.index') ? 'active' : '' }}">
-        <i class="bi bi-newspaper"></i>
-        <span>Berita</span>
-    </a>
-
-    <a href="{{ route('comparisons.index') }}" class="nav-link-custom {{ request()->routeIs('comparisons.index') ? 'active' : '' }}">
-        <i class="bi bi-bar-chart-line"></i>
-        <span>Perbandingan</span>
-    </a>
-
-    <a href="{{ route('watchlists.index') }}" class="nav-link-custom {{ request()->routeIs('watchlists.index') ? 'active' : '' }}">
-        <i class="bi bi-star"></i>
-        <span>Watchlist</span>
-    </a>
-
-    <a href="{{ route('reports.index') }}" class="nav-link-custom {{ request()->routeIs('reports.index') ? 'active' : '' }}">
-        <i class="bi bi-file-earmark-bar-graph"></i>
-        <span>Laporan</span>
-    </a>
-
-    @if (auth()->check() && auth()->user()->role === 'admin')
-        <a href="{{ route('admin.index') }}" class="nav-link-custom {{ request()->routeIs('admin.*') ? 'active' : '' }}">
-            <i class="bi bi-person-gear"></i>
-            <span>Admin</span>
-        </a>
-    @endif
-
+    {{-- INFORMASI USER --}}
     @auth
         <div class="sidebar-user">
-            <div class="user-avatar">
+            <div class="user-avatar" aria-hidden="true">
                 <i class="bi bi-person-fill"></i>
             </div>
-            <div class="flex-grow-1">
-                <div style="font-weight: 700;">{{ auth()->user()->name }}</div>
-                <div style="font-size: 13px; color: #bfdbfe;">{{ auth()->user()->email }}</div>
-                <form action="{{ route('logout') }}" method="POST" class="mt-2">
+
+            <div class="sidebar-user-content">
+                <div
+                    class="sidebar-user-name"
+                    title="{{ auth()->user()->name }}"
+                >
+                    {{ auth()->user()->name }}
+                </div>
+
+                <div
+                    class="sidebar-user-email"
+                    title="{{ auth()->user()->email }}"
+                >
+                    {{ auth()->user()->email }}
+                </div>
+
+                <div class="sidebar-user-role">
+                    {{ ucfirst(auth()->user()->role ?? 'user') }}
+                </div>
+
+                <form
+                    action="{{ route('logout') }}"
+                    method="POST"
+                    class="mt-2"
+                >
                     @csrf
-                    <button type="submit" class="btn btn-sm btn-light w-100">
-                        <i class="bi bi-box-arrow-right"></i>
+
+                    <button
+                        type="submit"
+                        class="btn btn-sm btn-light w-100"
+                    >
+                        <i
+                            class="bi bi-box-arrow-right me-1"
+                            aria-hidden="true"
+                        ></i>
+
                         Keluar
                     </button>
                 </form>
             </div>
         </div>
     @endauth
-</aside>
+</div>

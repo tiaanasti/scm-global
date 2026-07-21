@@ -2,6 +2,17 @@
 
 @section('title', 'Panel Admin - Supply Chain Management')
 
+@push('styles')
+<style>
+    #users-section,
+    #countries-section,
+    #ports-section,
+    #articles-section {
+        scroll-margin-top: 24px;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="topbar">
     <div class="page-title">
@@ -14,6 +25,7 @@
 </div>
 
 <div class="content">
+    <div id="adminAjaxAlert"></div>
 
     {{-- PESAN BERHASIL --}}
     @if (session('success'))
@@ -68,6 +80,11 @@
                     Ambil data terbaru Open-Meteo, ExchangeRate-API,
                     dan GNews untuk negara yang terdapat di Watchlist,
                     kemudian hitung ulang skor risiko.
+                </div>
+
+                <div class="metric-sub mt-2">
+                    Sinkronisasi otomatis dijalankan melalui Laravel Scheduler.
+                    Tombol ini digunakan untuk pembaruan manual.
                 </div>
             </div>
 
@@ -235,7 +252,7 @@
             Tambah Negara Baru
         </div>
 
-        <form action="{{ route('admin.countries.store') }}" method="POST">
+        <form action="{{ route('admin.countries.store') }}" method="POST" class="data-ajax-add-form" data-refresh-section="countries-section">
             @csrf
 
             <div class="row g-3">
@@ -582,7 +599,7 @@
     </div>
 
     {{-- KELOLA USER --}}
-    <div class="card-clean mb-4">
+    <div id="users-section" class="card-clean mb-4">
         <div class="section-title">
             Kelola User
         </div>
@@ -590,7 +607,8 @@
         <form
             action="{{ route('admin.users.store') }}"
             method="POST"
-            class="mb-4"
+            class="mb-4 data-ajax-add-form"
+            data-refresh-section="users-section"
         >
             @csrf
 
@@ -680,6 +698,28 @@
             </div>
         </form>
 
+        <form action="{{ route('admin.index') }}#users-section" method="GET" class="mb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6 col-lg-4">
+                    <input
+                        type="text"
+                        name="user_search"
+                        class="form-control"
+                        placeholder="Cari nama atau email user..."
+                        value="{{ request('user_search') }}"
+                    >
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i> Cari
+                    </button>
+                    <a href="{{ route('admin.index') }}#users-section" class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+
         <div class="table-responsive">
             <table class="table align-middle">
                 <thead>
@@ -728,7 +768,7 @@
                             <div class="d-flex gap-2 flex-wrap">
                                 <a
                                     href="{{ route('admin.users.edit', $user->id) }}"
-                                    class="btn btn-sm btn-outline-primary"
+                                    class="btn btn-sm btn-outline-primary ajax-edit-btn"
                                 >
                                     <i class="bi bi-pencil-square me-1"></i>
                                     Edit
@@ -738,7 +778,9 @@
                                     <form
                                         action="{{ route('admin.users.destroy', $user->id) }}"
                                         method="POST"
-                                        onsubmit="return confirm('Yakin ingin menghapus user ini?')"
+                                        class="data-ajax-delete-form"
+                                        data-refresh-section="users-section"
+                                        data-confirm="Yakin ingin menghapus user ini?"
                                     >
                                         @csrf
                                         @method('DELETE')
@@ -758,12 +800,20 @@
                 @empty
                     <tr>
                         <td colspan="5" class="text-center text-muted py-4">
-                            Belum ada user.
+                            Data tidak ditemukan.
                         </td>
                     </tr>
                 @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-3">
+            {{ $users
+                ->onEachSide(1)
+                ->withQueryString()
+                ->fragment('users-section')
+                ->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
@@ -829,10 +879,32 @@
     </div>
 
     {{-- DATASET NEGARA --}}
-    <div class="card-clean mb-4">
+    <div id="countries-section" class="card-clean mb-4">
         <div class="section-title">
             Dataset Negara dan Risiko
         </div>
+
+        <form action="{{ route('admin.index') }}#countries-section" method="GET" class="mb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6 col-lg-4">
+                    <input
+                        type="text"
+                        name="country_search"
+                        class="form-control"
+                        placeholder="Cari negara, kode, region, atau mata uang..."
+                        value="{{ request('country_search') }}"
+                    >
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i> Cari
+                    </button>
+                    <a href="{{ route('admin.index') }}#countries-section" class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
 
         <div class="table-responsive">
             <table class="table align-middle">
@@ -886,7 +958,7 @@
                             <div class="d-flex gap-2 flex-wrap">
                                 <a
                                     href="{{ route('admin.countries.edit', $country->id) }}"
-                                    class="btn btn-sm btn-outline-primary"
+                                    class="btn btn-sm btn-outline-primary ajax-edit-btn"
                                 >
                                     <i class="bi bi-pencil-square me-1"></i>
                                     Edit
@@ -895,7 +967,9 @@
                                 <form
                                     action="{{ route('admin.countries.destroy', $country->id) }}"
                                     method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus negara ini? Semua data terkait negara ini juga akan dihapus.')"
+                                    class="data-ajax-delete-form"
+                                    data-refresh-section="countries-section"
+                                    data-confirm="Yakin ingin menghapus negara ini? Semua data terkait negara ini juga akan dihapus."
                                 >
                                     @csrf
                                     @method('DELETE')
@@ -914,12 +988,20 @@
                 @empty
                     <tr>
                         <td colspan="6" class="text-center text-muted py-4">
-                            Belum ada data negara.
+                            Data tidak ditemukan.
                         </td>
                     </tr>
                 @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-3">
+            {{ $countries
+                ->onEachSide(1)
+                ->withQueryString()
+                ->fragment('countries-section')
+                ->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
@@ -934,7 +1016,7 @@
             halaman Pelabuhan dan peta tracking.
         </div>
 
-        <form action="{{ route('admin.ports.store') }}" method="POST">
+        <form action="{{ route('admin.ports.store') }}" method="POST" class="data-ajax-add-form" data-refresh-section="ports-section">
             @csrf
 
             <div class="row g-3">
@@ -981,7 +1063,7 @@
                             Pilih negara
                         </option>
 
-                        @foreach ($countries as $country)
+                        @foreach ($countryOptions as $country)
                             <option
                                 value="{{ $country->id }}"
                                 {{ (string) old('country_id') === (string) $country->id ? 'selected' : '' }}
@@ -1092,7 +1174,7 @@
     </div>
 
     {{-- DATASET PELABUHAN --}}
-    <div class="card-clean mb-4">
+    <div id="ports-section" class="card-clean mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
             <div>
                 <div class="section-title mb-1">
@@ -1106,9 +1188,57 @@
             </div>
 
             <span class="risk-badge risk-low">
-                {{ $ports->count() }} pelabuhan
+                {{ $ports->total() }} pelabuhan
             </span>
         </div>
+
+        <form action="{{ route('admin.index') }}#ports-section" method="GET" class="mb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4 col-lg-3">
+                    <input
+                        type="text"
+                        name="port_search"
+                        class="form-control"
+                        placeholder="Cari pelabuhan, kota, negara..."
+                        value="{{ request('port_search') }}"
+                    >
+                </div>
+                <div class="col-md-3 col-lg-3">
+                    <select name="port_country_id" class="form-select">
+                        <option value="">Semua Negara</option>
+                        @foreach ($countryOptions as $countryOpt)
+                            <option
+                                value="{{ $countryOpt->id }}"
+                                {{ (string) request('port_country_id') === (string) $countryOpt->id ? 'selected' : '' }}
+                            >
+                                {{ $countryOpt->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 col-lg-3">
+                    <select name="port_status" class="form-select">
+                        <option value="">Semua Status</option>
+                        @foreach (['Aman', 'Normal', 'Waspada', 'Siaga', 'Darurat'] as $statusOpt)
+                            <option
+                                value="{{ $statusOpt }}"
+                                {{ request('port_status') === $statusOpt ? 'selected' : '' }}
+                            >
+                                {{ $statusOpt }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i> Cari
+                    </button>
+                    <a href="{{ route('admin.index') }}#ports-section" class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
 
         <div class="table-responsive">
             <table class="table align-middle">
@@ -1171,7 +1301,7 @@
                             <div class="d-flex gap-2 flex-wrap">
                                 <a
                                     href="{{ route('admin.ports.edit', $port->id) }}"
-                                    class="btn btn-sm btn-outline-primary"
+                                    class="btn btn-sm btn-outline-primary ajax-edit-btn"
                                 >
                                     <i class="bi bi-pencil-square me-1"></i>
                                     Edit
@@ -1180,7 +1310,9 @@
                                 <form
                                     action="{{ route('admin.ports.destroy', $port->id) }}"
                                     method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus pelabuhan {{ addslashes($port->name) }}?')"
+                                    class="data-ajax-delete-form"
+                                    data-refresh-section="ports-section"
+                                    data-confirm="Yakin ingin menghapus pelabuhan {{ addslashes($port->name) }}?"
                                 >
                                     @csrf
                                     @method('DELETE')
@@ -1199,12 +1331,20 @@
                 @empty
                     <tr>
                         <td colspan="5" class="text-center text-muted py-4">
-                            Belum ada data pelabuhan.
+                            Data tidak ditemukan.
                         </td>
                     </tr>
                 @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-3">
+            {{ $ports
+                ->onEachSide(1)
+                ->withQueryString()
+                ->fragment('ports-section')
+                ->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
@@ -1214,7 +1354,7 @@
             Tambah Artikel Analisis
         </div>
 
-        <form action="{{ route('admin.articles.store') }}" method="POST">
+        <form action="{{ route('admin.articles.store') }}" method="POST" class="data-ajax-add-form" data-refresh-section="articles-section">
             @csrf
 
             <div class="row g-3">
@@ -1294,10 +1434,32 @@
     </div>
 
     {{-- ARTIKEL ANALISIS --}}
-    <div class="card-clean mb-4">
+    <div id="articles-section" class="card-clean mb-4">
         <div class="section-title">
             Artikel Analisis
         </div>
+
+        <form action="{{ route('admin.index') }}#articles-section" method="GET" class="mb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6 col-lg-4">
+                    <input
+                        type="text"
+                        name="article_search"
+                        class="form-control"
+                        placeholder="Cari judul, kategori, atau status artikel..."
+                        value="{{ request('article_search') }}"
+                    >
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i> Cari
+                    </button>
+                    <a href="{{ route('admin.index') }}#articles-section" class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
 
         @forelse ($articles as $article)
             <div class="news-item">
@@ -1324,7 +1486,7 @@
                 <div class="d-flex gap-2 flex-wrap">
                     <a
                         href="{{ route('admin.articles.edit', $article->id) }}"
-                        class="btn btn-sm btn-outline-primary"
+                        class="btn btn-sm btn-outline-primary ajax-edit-btn"
                     >
                         <i class="bi bi-pencil-square me-1"></i>
                         Edit
@@ -1333,7 +1495,9 @@
                     <form
                         action="{{ route('admin.articles.destroy', $article->id) }}"
                         method="POST"
-                        onsubmit="return confirm('Yakin ingin menghapus artikel ini?')"
+                        class="data-ajax-delete-form"
+                        data-refresh-section="articles-section"
+                        data-confirm="Yakin ingin menghapus artikel ini?"
                     >
                         @csrf
                         @method('DELETE')
@@ -1350,9 +1514,17 @@
             </div>
         @empty
             <p class="text-muted">
-                Belum ada artikel.
+                Data tidak ditemukan.
             </p>
         @endforelse
+
+        <div class="mt-3">
+            {{ $articles
+                ->onEachSide(1)
+                ->withQueryString()
+                ->fragment('articles-section')
+                ->links('pagination::bootstrap-5') }}
+        </div>
     </div>
 
     {{-- KAMUS SENTIMEN --}}
@@ -1398,5 +1570,28 @@
         © {{ date('Y') }} Supply Chain Management.
         Semua hak dilindungi.
     </div>
+
+    <!-- Admin Edit Modal -->
+    <div class="modal fade" id="adminEditModal" tabindex="-1" aria-labelledby="adminEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminEditModalLabel">Edit Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="adminEditModalBody">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-@endsection 
+@endsection
+
+@push('scripts')
+<script src="{{ asset('js/admin-ajax.js') }}?v={{ file_exists(public_path('js/admin-ajax.js')) ? filemtime(public_path('js/admin-ajax.js')) : time() }}"></script>
+@endpush

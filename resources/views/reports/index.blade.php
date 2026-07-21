@@ -9,10 +9,16 @@
             <p>Ringkasan akhir risiko rantai pasok global berdasarkan data negara, pelabuhan, kurs, dan berita.</p>
         </div>
 
-        <button onclick="window.print()" class="btn btn-primary">
-            <i class="bi bi-printer"></i>
-            Cetak Laporan
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('reports.export.csv') }}" class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-spreadsheet"></i>
+                Export CSV
+            </a>
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="bi bi-printer"></i>
+                Cetak Laporan
+            </button>
+        </div>
     </div>
 
     <div class="content">
