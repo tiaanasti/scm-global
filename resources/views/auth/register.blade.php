@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Daftar - Supply Chain Management')
+@section('title', 'Daftar - Supply Chain Risk Intelligence')
 
 @section('content')
     <div class="login-wrapper">

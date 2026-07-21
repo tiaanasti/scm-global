@@ -978,6 +978,7 @@ textarea {
     margin-top: 22px;
     color: var(--scm-muted);
     font-size: 13px;
+    text-align: center;
 }
 
 /* =========================================================

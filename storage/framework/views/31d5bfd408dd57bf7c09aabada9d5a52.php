@@ -11,7 +11,7 @@
 
         <span class="brand-text">
             Supply Chain<br>
-            Management
+            Risk Intelligence
         </span>
     </a>
 
@@ -103,7 +103,10 @@
             class="nav-link-custom <?php echo e(request()->routeIs('reports.*') ? 'active' : ''); ?>"
             <?php if(request()->routeIs('reports.*')): ?> aria-current="page" <?php endif; ?>
         >
-            <i class="bi bi-file-earmark-bar-graph-fill" aria-hidden="true"></i>
+            <i
+                class="bi bi-file-earmark-bar-graph-fill"
+                aria-hidden="true"
+            ></i>
             <span>Laporan</span>
         </a>
 
@@ -120,65 +123,4 @@
             <?php endif; ?>
         <?php endif; ?>
     </nav>
-
-    
-    <div class="sidebar-intel">
-        <strong>Supply Chain Intelligence</strong>
-
-        <span>
-            Pantau risiko global dan dukung pengambilan keputusan.
-        </span>
-    </div>
-
-    
-    <?php if(auth()->guard()->check()): ?>
-        <div class="sidebar-user">
-            <div class="user-avatar" aria-hidden="true">
-                <i class="bi bi-person-fill"></i>
-            </div>
-
-            <div class="sidebar-user-content">
-                <div
-                    class="sidebar-user-name"
-                    title="<?php echo e(auth()->user()->name); ?>"
-                >
-                    <?php echo e(auth()->user()->name); ?>
-
-                </div>
-
-                <div
-                    class="sidebar-user-email"
-                    title="<?php echo e(auth()->user()->email); ?>"
-                >
-                    <?php echo e(auth()->user()->email); ?>
-
-                </div>
-
-                <div class="sidebar-user-role">
-                    <?php echo e(ucfirst(auth()->user()->role ?? 'user')); ?>
-
-                </div>
-
-                <form
-                    action="<?php echo e(route('logout')); ?>"
-                    method="POST"
-                    class="mt-2"
-                >
-                    <?php echo csrf_field(); ?>
-
-                    <button
-                        type="submit"
-                        class="btn btn-sm btn-light w-100"
-                    >
-                        <i
-                            class="bi bi-box-arrow-right me-1"
-                            aria-hidden="true"
-                        ></i>
-
-                        Keluar
-                    </button>
-                </form>
-            </div>
-        </div>
-    <?php endif; ?>
 </div><?php /**PATH D:\laragon\www\supply-chain-management\resources\views/partials/sidebar.blade.php ENDPATH**/ ?>

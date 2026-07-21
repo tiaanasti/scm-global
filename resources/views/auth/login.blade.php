@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Masuk - Supply Chain Management')
+@section('title', 'Masuk - Supply Chain Risk Intelligence')
 
 @section('content')
     <div class="login-wrapper">
@@ -10,7 +10,7 @@
                     <i class="bi bi-box-seam"></i>
                 </div>
                 <div>
-                    <h1>Supply Chain Management</h1>
+                    <h1>Supply Chain Risk Intelligence</h1>
                     <p>Masuk untuk mengakses dashboard risiko rantai pasok global.</p>
                 </div>
             </div>

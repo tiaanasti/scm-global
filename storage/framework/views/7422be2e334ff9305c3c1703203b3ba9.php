@@ -1,6 +1,6 @@
 
 
-<?php $__env->startSection('title', 'Panel Admin - Supply Chain Management'); ?>
+<?php $__env->startSection('title', 'Panel Admin - Supply Chain Risk Intelligence'); ?>
 
 <?php $__env->startPush('styles'); ?>
 <style>
@@ -1613,8 +1613,7 @@
     </div>
 
     <div class="footer">
-        © <?php echo e(date('Y')); ?> Supply Chain Management.
-        Semua hak dilindungi.
+        © <?php echo e(date('Y')); ?> Supply Chain Risk Intelligence. Semua hak dilindungi.
     </div>
 
     <!-- Admin Edit Modal -->

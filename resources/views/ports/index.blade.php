@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Pelabuhan dan Tracking - Supply Chain Management')
+@section('title', 'Pelabuhan dan Tracking - Supply Chain Risk Intelligence')
 
 @push('styles')
     <link
@@ -606,8 +606,7 @@
 
             {{-- FOOTER --}}
             <div class="footer">
-                © {{ date('Y') }} Supply Chain Management.
-                Semua hak dilindungi.
+                © {{ date('Y') }} Supply Chain Risk Intelligence. Semua hak dilindungi.
             </div>
         </div>
     </div>

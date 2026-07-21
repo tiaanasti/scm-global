@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Risiko Rantai Pasok Global - Supply Chain Management')
+@section('title', 'Dashboard Intelijen Risiko Rantai Pasok Global - Supply Chain Risk Intelligence')
 
 @section('content')
     @php
@@ -30,7 +30,7 @@
     {{-- TOPBAR --}}
     <div class="topbar">
         <div class="page-title">
-            <h1>Dashboard Risiko Rantai Pasok Global</h1>
+            <h1>Dashboard Intelijen Risiko Rantai Pasok Global</h1>
 
             <p>
                 Monitoring risiko negara, cuaca, kurs, berita,
@@ -518,9 +518,7 @@
 
         {{-- FOOTER --}}
         <div class="footer">
-            Sumber data mengikuti cache database project.
-            Terakhir diperbarui:
-            {{ $formatDateTime($latestDataAt) }}.
+            © {{ date('Y') }} Supply Chain Risk Intelligence. Semua hak dilindungi.
         </div>
     </div>
 @endsection

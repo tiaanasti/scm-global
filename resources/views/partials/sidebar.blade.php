@@ -11,7 +11,7 @@
 
         <span class="brand-text">
             Supply Chain<br>
-            Management
+            Risk Intelligence
         </span>
     </a>
 
@@ -103,7 +103,10 @@
             class="nav-link-custom {{ request()->routeIs('reports.*') ? 'active' : '' }}"
             @if (request()->routeIs('reports.*')) aria-current="page" @endif
         >
-            <i class="bi bi-file-earmark-bar-graph-fill" aria-hidden="true"></i>
+            <i
+                class="bi bi-file-earmark-bar-graph-fill"
+                aria-hidden="true"
+            ></i>
             <span>Laporan</span>
         </a>
 
@@ -120,62 +123,4 @@
             @endif
         @endauth
     </nav>
-
-    {{-- INFORMASI SISTEM --}}
-    <div class="sidebar-intel">
-        <strong>Supply Chain Intelligence</strong>
-
-        <span>
-            Pantau risiko global dan dukung pengambilan keputusan.
-        </span>
-    </div>
-
-    {{-- INFORMASI USER --}}
-    @auth
-        <div class="sidebar-user">
-            <div class="user-avatar" aria-hidden="true">
-                <i class="bi bi-person-fill"></i>
-            </div>
-
-            <div class="sidebar-user-content">
-                <div
-                    class="sidebar-user-name"
-                    title="{{ auth()->user()->name }}"
-                >
-                    {{ auth()->user()->name }}
-                </div>
-
-                <div
-                    class="sidebar-user-email"
-                    title="{{ auth()->user()->email }}"
-                >
-                    {{ auth()->user()->email }}
-                </div>
-
-                <div class="sidebar-user-role">
-                    {{ ucfirst(auth()->user()->role ?? 'user') }}
-                </div>
-
-                <form
-                    action="{{ route('logout') }}"
-                    method="POST"
-                    class="mt-2"
-                >
-                    @csrf
-
-                    <button
-                        type="submit"
-                        class="btn btn-sm btn-light w-100"
-                    >
-                        <i
-                            class="bi bi-box-arrow-right me-1"
-                            aria-hidden="true"
-                        ></i>
-
-                        Keluar
-                    </button>
-                </form>
-            </div>
-        </div>
-    @endauth
 </div>

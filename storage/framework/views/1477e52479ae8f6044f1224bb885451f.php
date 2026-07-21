@@ -1,4 +1,4 @@
-<?php $__env->startSection('title', 'Dashboard Risiko Rantai Pasok Global - Supply Chain Management'); ?>
+<?php $__env->startSection('title', 'Dashboard Intelijen Risiko Rantai Pasok Global - Supply Chain Risk Intelligence'); ?>
 
 <?php $__env->startSection('content'); ?>
     <?php
@@ -28,7 +28,7 @@
     
     <div class="topbar">
         <div class="page-title">
-            <h1>Dashboard Risiko Rantai Pasok Global</h1>
+            <h1>Dashboard Intelijen Risiko Rantai Pasok Global</h1>
 
             <p>
                 Monitoring risiko negara, cuaca, kurs, berita,
@@ -538,9 +538,7 @@
 
         
         <div class="footer">
-            Sumber data mengikuti cache database project.
-            Terakhir diperbarui:
-            <?php echo e($formatDateTime($latestDataAt)); ?>.
+            © <?php echo e(date('Y')); ?> Supply Chain Risk Intelligence. Semua hak dilindungi.
         </div>
     </div>
 <?php $__env->stopSection(); ?>
@@ -830,4 +828,5 @@
     });
 </script>
 <?php $__env->stopPush(); ?>
+
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\supply-chain-management\resources\views/dashboard.blade.php ENDPATH**/ ?>

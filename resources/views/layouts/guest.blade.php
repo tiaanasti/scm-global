@@ -14,7 +14,7 @@
     >
 
     <title>
-        @yield('title', 'Masuk - Supply Chain Management')
+        @yield('title', 'Masuk - Supply Chain Risk Intelligence')
     </title>
 
     {{-- Bootstrap 5 --}}

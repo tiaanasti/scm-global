@@ -1,6 +1,6 @@
 
 
-<?php $__env->startSection('title', 'Pelabuhan dan Tracking - Supply Chain Management'); ?>
+<?php $__env->startSection('title', 'Pelabuhan dan Tracking - Supply Chain Risk Intelligence'); ?>
 
 <?php $__env->startPush('styles'); ?>
     <link
@@ -622,8 +622,7 @@
 
             
             <div class="footer">
-                © <?php echo e(date('Y')); ?> Supply Chain Management.
-                Semua hak dilindungi.
+                © <?php echo e(date('Y')); ?> Supply Chain Risk Intelligence. Semua hak dilindungi.
             </div>
         </div>
     </div>
@@ -639,4 +638,5 @@
         src="<?php echo e(asset('js/port.js')); ?>?v=<?php echo e(file_exists(public_path('js/port.js')) ? filemtime(public_path('js/port.js')) : time()); ?>"
     ></script>
 <?php $__env->stopPush(); ?>
+
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\supply-chain-management\resources\views/ports/index.blade.php ENDPATH**/ ?>

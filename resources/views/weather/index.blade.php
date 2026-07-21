@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Cuaca Global - Supply Chain Management')
+@section('title', 'Cuaca Global - Supply Chain Risk Intelligence')
 
 @push('styles')
     <link

@@ -14,7 +14,7 @@
     >
 
     <title>
-        <?php echo $__env->yieldContent('title', 'Masuk - Supply Chain Management'); ?>
+        <?php echo $__env->yieldContent('title', 'Masuk - Supply Chain Risk Intelligence'); ?>
     </title>
 
     
@@ -52,4 +52,4 @@
 
     <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
-</html><?php /**PATH D:\laragon\www\supply-chain-management\resources\views\layouts\guest.blade.php ENDPATH**/ ?>
+</html><?php /**PATH D:\laragon\www\supply-chain-management\resources\views/layouts/guest.blade.php ENDPATH**/ ?>

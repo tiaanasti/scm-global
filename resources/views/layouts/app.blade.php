@@ -14,7 +14,7 @@
     >
 
     <title>
-        @yield('title', 'Supply Chain Management')
+        @yield('title', 'Supply Chain Risk Intelligence')
     </title>
 
     {{-- Bootstrap 5 --}}
@@ -111,7 +111,7 @@
                 </button>
 
                 <div class="mobile-brand">
-                    Supply Chain Management
+                    Supply Chain Risk Intelligence
                 </div>
             </header>
 

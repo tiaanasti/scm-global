@@ -1,6 +1,6 @@
 
 
-<?php $__env->startSection('title', 'Sinyal Berita - Supply Chain Management'); ?>
+<?php $__env->startSection('title', 'Sinyal Berita - Supply Chain Risk Intelligence'); ?>
 
 <?php $__env->startSection('content'); ?>
     <?php
@@ -448,8 +448,7 @@
         </div>
 
         <div class="footer">
-            © <?php echo e(date('Y')); ?> Supply Chain Management.
-            Semua hak dilindungi.
+            © <?php echo e(date('Y')); ?> Supply Chain Risk Intelligence. Semua hak dilindungi.
         </div>
     </div>
 <?php $__env->stopSection(); ?>
@@ -551,4 +550,5 @@
     });
 </script>
 <?php $__env->stopPush(); ?>
+
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\supply-chain-management\resources\views/news/index.blade.php ENDPATH**/ ?>

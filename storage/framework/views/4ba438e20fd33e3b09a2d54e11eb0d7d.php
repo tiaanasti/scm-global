@@ -1,6 +1,6 @@
 
 
-<?php $__env->startSection('title', 'Intelijen Negara - Supply Chain Management'); ?>
+<?php $__env->startSection('title', 'Intelijen Negara - Supply Chain Risk Intelligence'); ?>
 
 <?php $__env->startSection('content'); ?>
 <?php
@@ -739,7 +739,7 @@
         </div>
 
         <div class="footer">
-            © <?php echo e(date('Y')); ?> Supply Chain Management. Semua hak dilindungi.
+            © <?php echo e(date('Y')); ?> Supply Chain Risk Intelligence. Semua hak dilindungi.
         </div>
     </div>
 </div>

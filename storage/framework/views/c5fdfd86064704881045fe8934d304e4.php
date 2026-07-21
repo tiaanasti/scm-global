@@ -1,4 +1,4 @@
-<?php $__env->startSection('title', 'Cuaca Global - Supply Chain Management'); ?>
+<?php $__env->startSection('title', 'Cuaca Global - Supply Chain Risk Intelligence'); ?>
 
 <?php $__env->startPush('styles'); ?>
     <link

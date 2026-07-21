@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Panel Admin - Supply Chain Management')
+@section('title', 'Panel Admin - Supply Chain Risk Intelligence')
 
 @push('styles')
 <style>
@@ -1567,8 +1567,7 @@
     </div>
 
     <div class="footer">
-        © {{ date('Y') }} Supply Chain Management.
-        Semua hak dilindungi.
+        © {{ date('Y') }} Supply Chain Risk Intelligence. Semua hak dilindungi.
     </div>
 
     <!-- Admin Edit Modal -->

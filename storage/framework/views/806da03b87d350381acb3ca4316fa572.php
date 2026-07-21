@@ -1,4 +1,4 @@
-<?php $__env->startSection('title', 'Masuk - Supply Chain Management'); ?>
+<?php $__env->startSection('title', 'Masuk - Supply Chain Risk Intelligence'); ?>
 
 <?php $__env->startSection('content'); ?>
     <div class="login-wrapper">
@@ -8,7 +8,7 @@
                     <i class="bi bi-box-seam"></i>
                 </div>
                 <div>
-                    <h1>Supply Chain Management</h1>
+                    <h1>Supply Chain Risk Intelligence</h1>
                     <p>Masuk untuk mengakses dashboard risiko rantai pasok global.</p>
                 </div>
             </div>
@@ -97,4 +97,4 @@
     <?php echo $__env->make('auth.partials.guest-styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 <?php $__env->stopPush(); ?>
 
-<?php echo $__env->make('layouts.guest', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\supply-chain-management\resources\views\auth\login.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.guest', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laragon\www\supply-chain-management\resources\views/auth/login.blade.php ENDPATH**/ ?>

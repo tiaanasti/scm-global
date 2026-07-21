@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Laporan Sistem - Supply Chain Management')
+@section('title', 'Laporan Sistem - Supply Chain Risk Intelligence')
 
 @section('content')
     <div class="topbar">
@@ -301,7 +301,7 @@
         </div>
 
         <div class="footer">
-            © {{ date('Y') }} Supply Chain Management. Semua hak dilindungi.
+            © {{ date('Y') }} Supply Chain Risk Intelligence. Semua hak dilindungi.
         </div>
     </div>
 @endsection

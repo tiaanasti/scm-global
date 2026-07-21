@@ -14,7 +14,7 @@
     >
 
     <title>
-        <?php echo $__env->yieldContent('title', 'Supply Chain Management'); ?>
+        <?php echo $__env->yieldContent('title', 'Supply Chain Risk Intelligence'); ?>
     </title>
 
     
@@ -106,7 +106,7 @@
                 </button>
 
                 <div class="mobile-brand">
-                    Supply Chain Management
+                    Supply Chain Risk Intelligence
                 </div>
             </header>
 

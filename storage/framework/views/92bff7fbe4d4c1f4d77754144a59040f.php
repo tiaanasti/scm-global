@@ -60,4 +60,4 @@
         text-decoration: none;
     }
 </style>
-<?php /**PATH D:\laragon\www\supply-chain-management\resources\views\auth\partials\guest-styles.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\laragon\www\supply-chain-management\resources\views/auth/partials/guest-styles.blade.php ENDPATH**/ ?>
