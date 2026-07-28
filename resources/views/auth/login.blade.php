@@ -83,13 +83,6 @@
                 </small>
             </div>
 
-            <div class="login-hint mt-3">
-                <small class="text-muted">
-                    Demo admin: <strong>admin@supplyrisk.test</strong> / <strong>password</strong>
-                </small>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @push('styles')
