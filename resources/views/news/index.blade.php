@@ -305,7 +305,18 @@
                                 </div>
 
                                 <div class="news-title">
-                                    {{ $item->title }}
+                                    @if (!empty($item->url) && $item->url !== '#')
+                                        <a
+                                            href="{{ $item->url }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="text-decoration-none"
+                                        >
+                                            {{ $item->title }}
+                                        </a>
+                                    @else
+                                        <span>{{ $item->title }}</span>
+                                    @endif
                                 </div>
 
                                 <div class="news-desc">
@@ -367,6 +378,7 @@
                             <thead>
                             <tr>
                                 <th>Negara</th>
+                                <th>Judul</th>
                                 <th>Kategori</th>
                                 <th>Sentimen</th>
                                 <th>Skor</th>
@@ -380,6 +392,21 @@
                                         <strong>
                                             {{ $item->country_name ?? '-' }}
                                         </strong>
+                                    </td>
+
+                                    <td>
+                                        @if (!empty($item->url) && $item->url !== '#')
+                                            <a
+                                                href="{{ $item->url }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="text-decoration-none fw-semibold"
+                                            >
+                                                {{ \Illuminate\Support\Str::limit($item->title, 64) }}
+                                            </a>
+                                        @else
+                                            <span>{{ \Illuminate\Support\Str::limit($item->title, 64) }}</span>
+                                        @endif
                                     </td>
 
                                     <td>
@@ -411,7 +438,7 @@
                             @empty
                                 <tr>
                                     <td
-                                        colspan="4"
+                                        colspan="5"
                                         class="text-center text-muted py-4"
                                     >
                                         Belum ada sinyal berita.

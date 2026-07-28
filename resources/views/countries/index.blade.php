@@ -487,10 +487,10 @@
                         <span class="risk-badge risk-low">{{ isset($gdpTrend) ? $gdpTrend->count() : 0 }} data</span>
                     </div>
 
-                    @if (isset($gdpTrend) && $gdpTrend->isNotEmpty())
+                    @if (isset($gdpTrend) && $gdpTrend->count() >= 2)
                         <canvas id="countryGdpTrendChart" height="120"></canvas>
                     @else
-                        <p class="text-muted mb-0">Data historis belum tersedia</p>
+                        <p class="text-muted mb-0">Data historis belum cukup untuk membentuk grafik tren.</p>
                     @endif
                 </div>
             </div>
@@ -502,10 +502,10 @@
                         <span class="risk-badge risk-low">{{ isset($inflationTrend) ? $inflationTrend->count() : 0 }} data</span>
                     </div>
 
-                    @if (isset($inflationTrend) && $inflationTrend->isNotEmpty())
+                    @if (isset($inflationTrend) && $inflationTrend->count() >= 2)
                         <canvas id="countryInflationTrendChart" height="120"></canvas>
                     @else
-                        <p class="text-muted mb-0">Data historis belum tersedia</p>
+                        <p class="text-muted mb-0">Data historis belum cukup untuk membentuk grafik tren.</p>
                     @endif
                 </div>
             </div>
@@ -742,11 +742,15 @@
             });
         }
 
-        @if (isset($gdpTrend) && $gdpTrend->isNotEmpty())
+        @if (isset($gdpTrend) && $gdpTrend->count() >= 2)
         const gdpTrendLabels = @json($gdpTrend->pluck('year')->map(fn ($year) => (string) $year));
-        const gdpTrendValues = @json($gdpTrend->pluck('gdp')->map(fn ($value) => (float) $value));
+        const gdpTrendValues = @json($gdpTrend->pluck('gdp')->map(fn ($value) => $value === null ? null : (float) $value));
 
-        new Chart(document.getElementById('countryGdpTrendChart'), {
+        if (window.countryGdpTrendChart && typeof window.countryGdpTrendChart.destroy === 'function') {
+            window.countryGdpTrendChart.destroy();
+        }
+
+        window.countryGdpTrendChart = new Chart(document.getElementById('countryGdpTrendChart'), {
             type: 'line',
             data: {
                 labels: gdpTrendLabels,
@@ -756,7 +760,7 @@
                     borderColor: '#2563eb',
                     backgroundColor: 'rgba(37, 99, 235, 0.10)',
                     pointBackgroundColor: '#2563eb',
-                    pointRadius: gdpTrendValues.length === 1 ? 6 : 4,
+                    pointRadius: 4,
                     borderWidth: 3,
                     tension: 0.3,
                     fill: true
@@ -768,12 +772,10 @@
                 plugins: { legend: { display: true } },
                 scales: {
                     x: {
-                        offset: gdpTrendValues.length === 1
+                        offset: false
                     },
                     y: {
-                        suggestedMin: gdpTrendValues.length > 1
-                            ? Math.min(...gdpTrendValues) * 0.92
-                            : undefined,
+                        suggestedMin: Math.min(...gdpTrendValues.filter((value) => value !== null)) * 0.92,
                         ticks: {
                             callback: function (value) {
                                 if (value >= 1000000000000) {
@@ -791,11 +793,15 @@
         });
         @endif
 
-        @if (isset($inflationTrend) && $inflationTrend->isNotEmpty())
+        @if (isset($inflationTrend) && $inflationTrend->count() >= 2)
         const inflationTrendLabels = @json($inflationTrend->pluck('year')->map(fn ($year) => (string) $year));
-        const inflationTrendValues = @json($inflationTrend->pluck('inflation_rate')->map(fn ($value) => (float) $value));
+        const inflationTrendValues = @json($inflationTrend->pluck('inflation_rate')->map(fn ($value) => $value === null ? null : (float) $value));
 
-        new Chart(document.getElementById('countryInflationTrendChart'), {
+        if (window.countryInflationTrendChart && typeof window.countryInflationTrendChart.destroy === 'function') {
+            window.countryInflationTrendChart.destroy();
+        }
+
+        window.countryInflationTrendChart = new Chart(document.getElementById('countryInflationTrendChart'), {
             type: 'line',
             data: {
                 labels: inflationTrendLabels,
@@ -805,7 +811,7 @@
                     borderColor: '#f59e0b',
                     backgroundColor: 'rgba(245, 158, 11, 0.10)',
                     pointBackgroundColor: '#f59e0b',
-                    pointRadius: inflationTrendValues.length === 1 ? 6 : 4,
+                    pointRadius: 4,
                     borderWidth: 3,
                     tension: 0.3,
                     fill: true
@@ -817,12 +823,10 @@
                 plugins: { legend: { display: true } },
                 scales: {
                     x: {
-                        offset: inflationTrendValues.length === 1
+                        offset: false
                     },
                     y: {
-                        suggestedMin: inflationTrendValues.length > 1
-                            ? Math.min(...inflationTrendValues) - 0.5
-                            : undefined,
+                        suggestedMin: Math.min(...inflationTrendValues.filter((value) => value !== null)) - 0.5,
                         ticks: {
                             callback: function (value) {
                                 return value + '%';

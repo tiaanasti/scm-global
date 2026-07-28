@@ -147,10 +147,10 @@
                         <span class="risk-badge risk-low">{{ $riskTrend->count() }} data</span>
                     </div>
 
-                    @if ($riskTrend->isNotEmpty())
+                    @if ($riskTrend->count() >= 2)
                         <canvas id="riskScoreTrendChart" height="125"></canvas>
                     @else
-                        <p class="text-muted mb-0">Data historis belum tersedia</p>
+                        <p class="text-muted mb-0">Data historis belum cukup untuk membentuk grafik tren.</p>
                     @endif
                 </div>
             </div>
@@ -232,8 +232,32 @@
                                 </span>
                                 <small class="text-muted">{{ $item->category ?? 'Umum' }}</small>
                             </div>
-                            <div class="news-title">{{ $item->title }}</div>
+                            <div class="news-title">
+                                @if (!empty($item->url) && $item->url !== '#')
+                                    <a
+                                        href="{{ $item->url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="text-decoration-none"
+                                    >
+                                        {{ $item->title }}
+                                    </a>
+                                @else
+                                    <span>{{ $item->title }}</span>
+                                @endif
+                            </div>
                             <div class="news-desc">{{ $item->description }}</div>
+                            @if (!empty($item->url) && $item->url !== '#')
+                                <a
+                                    href="{{ $item->url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="btn btn-sm btn-outline-scm mt-2"
+                                >
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                                    Buka Sumber
+                                </a>
+                            @endif
                         </div>
                     @empty
                         <p class="text-muted">Belum ada berita untuk negara ini.</p>
@@ -294,11 +318,15 @@
     const currencyScore = Number(@json($risk->currency_score ?? 0));
     const newsScore = Number(@json($risk->news_score ?? 0));
 
-    @if ($riskTrend->isNotEmpty())
+    @if ($riskTrend->count() >= 2)
     const riskTrendLabels = @json($riskTrend->pluck('score_date'));
-    const riskTrendValues = @json($riskTrend->pluck('total_score'));
+    const riskTrendValues = @json($riskTrend->pluck('total_score')->map(fn ($value) => $value === null ? null : (float) $value));
 
-    new Chart(document.getElementById('riskScoreTrendChart'), {
+    if (window.riskScoreTrendChart && typeof window.riskScoreTrendChart.destroy === 'function') {
+        window.riskScoreTrendChart.destroy();
+    }
+
+    window.riskScoreTrendChart = new Chart(document.getElementById('riskScoreTrendChart'), {
         type: 'line',
         data: {
             labels: riskTrendLabels,
@@ -323,7 +351,11 @@
     });
     @endif
 
-    new Chart(document.getElementById('riskCompositionChart'), {
+    if (window.riskCompositionChart && typeof window.riskCompositionChart.destroy === 'function') {
+        window.riskCompositionChart.destroy();
+    }
+
+    window.riskCompositionChart = new Chart(document.getElementById('riskCompositionChart'), {
         type: 'doughnut',
         data: {
             labels: ['Cuaca', 'Inflasi', 'Kurs', 'Berita'],

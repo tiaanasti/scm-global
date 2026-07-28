@@ -91,10 +91,10 @@
                         <span class="risk-badge risk-medium">{{ $currencyTrend->count() }} data terakhir</span>
                     </div>
 
-                    @if ($currencyTrend->isNotEmpty())
+                    @if ($currencyTrend->count() >= 2)
                         <canvas id="currencyRateTrendChart" height="125"></canvas>
                     @else
-                        <p class="text-muted mb-0">Data historis belum tersedia</p>
+                        <p class="text-muted mb-0">Data historis belum cukup untuk membentuk grafik tren.</p>
                     @endif
                 </div>
             </div>
@@ -190,11 +190,15 @@
 <script>
     const targetCurrency = @json($currency->target_currency ?? '');
 
-    @if ($currencyTrend->isNotEmpty())
+    @if ($currencyTrend->count() >= 2)
     const currencyTrendLabels = @json($currencyTrend->pluck('rate_date'));
-    const currencyTrendValues = @json($currencyTrend->pluck('exchange_rate'));
+    const currencyTrendValues = @json($currencyTrend->pluck('exchange_rate')->map(fn ($value) => $value === null ? null : (float) $value));
 
-    new Chart(document.getElementById('currencyRateTrendChart'), {
+    if (window.currencyRateTrendChart && typeof window.currencyRateTrendChart.destroy === 'function') {
+        window.currencyRateTrendChart.destroy();
+    }
+
+    window.currencyRateTrendChart = new Chart(document.getElementById('currencyRateTrendChart'), {
         type: 'line',
         data: {
             labels: currencyTrendLabels,

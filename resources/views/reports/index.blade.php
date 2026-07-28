@@ -312,7 +312,11 @@
     const mediumRiskCount = Number(@json($summary['medium_risk_count']));
     const lowRiskCount = Number(@json($summary['low_risk_count']));
 
-    new Chart(document.getElementById('riskSummaryChart'), {
+    if (window.riskSummaryChart && typeof window.riskSummaryChart.destroy === 'function') {
+        window.riskSummaryChart.destroy();
+    }
+
+    window.riskSummaryChart = new Chart(document.getElementById('riskSummaryChart'), {
         type: 'doughnut',
         data: {
             labels: ['Risiko Tinggi', 'Risiko Sedang', 'Risiko Rendah'],

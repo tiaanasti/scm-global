@@ -265,8 +265,32 @@
                                 {{ $item->sentiment }}
                             </span>
 
-                            <div class="news-title mt-2">{{ $item->title }}</div>
+                            <div class="news-title mt-2">
+                                @if (!empty($item->url) && $item->url !== '#')
+                                    <a
+                                        href="{{ $item->url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="text-decoration-none"
+                                    >
+                                        {{ $item->title }}
+                                    </a>
+                                @else
+                                    <span>{{ $item->title }}</span>
+                                @endif
+                            </div>
                             <div class="news-desc">{{ $item->description }}</div>
+                            @if (!empty($item->url) && $item->url !== '#')
+                                <a
+                                    href="{{ $item->url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="btn btn-sm btn-outline-scm mt-2"
+                                >
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                                    Buka Sumber
+                                </a>
+                            @endif
                         </div>
                     @empty
                         <p class="text-muted">Belum ada berita.</p>
@@ -285,8 +309,32 @@
                                 {{ $item->sentiment }}
                             </span>
 
-                            <div class="news-title mt-2">{{ $item->title }}</div>
+                            <div class="news-title mt-2">
+                                @if (!empty($item->url) && $item->url !== '#')
+                                    <a
+                                        href="{{ $item->url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="text-decoration-none"
+                                    >
+                                        {{ $item->title }}
+                                    </a>
+                                @else
+                                    <span>{{ $item->title }}</span>
+                                @endif
+                            </div>
                             <div class="news-desc">{{ $item->description }}</div>
+                            @if (!empty($item->url) && $item->url !== '#')
+                                <a
+                                    href="{{ $item->url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="btn btn-sm btn-outline-scm mt-2"
+                                >
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                                    Buka Sumber
+                                </a>
+                            @endif
                         </div>
                     @empty
                         <p class="text-muted">Belum ada berita.</p>
@@ -322,7 +370,11 @@
         Number(@json($secondRisk->news_score ?? 0))
     ];
 
-    new Chart(document.getElementById('comparisonChart'), {
+    if (window.comparisonChart && typeof window.comparisonChart.destroy === 'function') {
+        window.comparisonChart.destroy();
+    }
+
+    window.comparisonChart = new Chart(document.getElementById('comparisonChart'), {
         type: 'bar',
         data: {
             labels: ['Total', 'Cuaca', 'Inflasi', 'Kurs', 'Berita'],

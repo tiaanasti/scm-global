@@ -53,6 +53,7 @@ Route::prefix('api')->group(function () {
     Route::get('/news', [ApiController::class, 'news']);
     Route::get('/currency', [ApiController::class, 'currency']);
     Route::get('/summary', [ApiController::class, 'summary']);
+    Route::get('/system-data-version', [ApiController::class, 'systemDataVersion']);
 });
 
 /*
@@ -188,6 +189,9 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/admin/api/sync', [DashboardController::class, 'syncExternalApis'])
             ->name('admin.api.sync');
+
+        Route::post('/admin/news/backfill-global', [DashboardController::class, 'backfillGlobalNews'])
+            ->name('admin.news.backfill_global');
 
         Route::post('/admin/world-bank/sync', [WorldBankSyncController::class, 'sync'])
             ->name('admin.world_bank.sync');

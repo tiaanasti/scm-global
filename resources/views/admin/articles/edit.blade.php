@@ -40,6 +40,11 @@
                         <input type="text" name="category" class="form-control" value="{{ old('category', $article->category) }}">
                     </div>
 
+                    <div class="col-lg-6">
+                        <label class="form-label">Link Sumber</label>
+                        <input type="url" name="source_url" class="form-control" value="{{ old('source_url', $article->source_url) }}" placeholder="https://contoh.com/artikel-sumber">
+                    </div>
+
                     <div class="col-lg-3">
                         <label class="form-label">Status</label>
                         <select name="status" class="form-select" required>

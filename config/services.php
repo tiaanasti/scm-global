@@ -113,15 +113,20 @@ return [
         'limit' => (int) env('REST_COUNTRIES_LIMIT', 100),
     ],
     'world_port_index' => [
-    'arcgis_item_id' => env(
-        'WORLD_PORT_INDEX_ARCGIS_ITEM_ID',
-        '976ae810a25245228747b80191f625d0'
-    ),
+        'arcgis_item_id' => env(
+            'WORLD_PORT_INDEX_ARCGIS_ITEM_ID',
+            '976ae810a25245228747b80191f625d0'
+        ),
 
-    'arcgis_items_url' => env(
-        'WORLD_PORT_INDEX_ARCGIS_ITEMS_URL',
-        'https://www.arcgis.com/sharing/rest/content/items'
-    ),
-],
+        'arcgis_items_url' => env(
+            'WORLD_PORT_INDEX_ARCGIS_ITEMS_URL',
+            'https://www.arcgis.com/sharing/rest/content/items'
+        ),
+
+        'layer_url' => env(
+            'WORLD_PORT_INDEX_LAYER_URL',
+            'https://services-eu1.arcgis.com/BuS9rtTsYEV5C0xh/arcgis/rest/services/World_Port_Index/FeatureServer/0'
+        ),
+    ],
 
 ];

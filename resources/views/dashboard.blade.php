@@ -44,11 +44,21 @@
 
                 <input
                     type="search"
+                    id="dashboardCountrySearch"
                     class="form-control"
                     placeholder="Cari negara yang tersedia..."
                     aria-label="Cari negara"
-                    disabled
+                    list="dashboardCountrySearchList"
                 >
+
+                <datalist id="dashboardCountrySearchList">
+                    @foreach ($countries as $item)
+                        <option
+                            value="{{ $item->name }}"
+                            data-country-id="{{ $item->id }}"
+                        ></option>
+                    @endforeach
+                </datalist>
             </div>
 
             <span class="risk-badge {{ $freshnessClass }}">
@@ -203,7 +213,7 @@
                     </div>
 
                     <div class="scm-kpi-icon icon-blue">
-                        <i class="bi bi-anchor"></i>
+                        <i class="bi bi-truck"></i>
                     </div>
                 </div>
             </div>
@@ -272,8 +282,22 @@
                         </div>
 
                         <span class="risk-badge risk-low">
-                            {{ $allPorts->count() }} marker
+                            {{ $dashboardPortStats['sent_to_view'] ?? $allPorts->count() }} marker
                         </span>
+                    </div>
+
+                    <div class="scm-muted small mb-2">
+                        Total database:
+                        {{ number_format($dashboardPortStats['total_database'] ?? 0) }}
+                        |
+                        Koordinat valid:
+                        {{ number_format($dashboardPortStats['valid_coordinates'] ?? 0) }}
+                        |
+                        Dikirim ke view:
+                        {{ number_format($dashboardPortStats['sent_to_view'] ?? $allPorts->count()) }}
+                        |
+                        Dirender:
+                        <span id="dashboardRenderedMarkers">0</span>
                     </div>
 
                     <div id="map"></div>
@@ -298,8 +322,12 @@
 
                     @forelse ($dashboardInsights->take(4) as $insight)
                         <a
-                            href="{{ $insight['url'] }}"
+                            href="{{ $insight['url'] ?: route('news.index', ['country_id' => $selectedCountryId]) }}"
                             class="insight-item d-flex gap-3 text-decoration-none"
+                            @if (!empty($insight['external']))
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            @endif
                         >
                             <span
                                 class="insight-icon {{
@@ -418,13 +446,13 @@
                         </span>
                     </div>
 
-                    @if ($riskTrend->isNotEmpty())
+                    @if ($riskTrend->count() >= 2)
                         <div class="dashboard-chart-wrap dashboard-trend-chart">
                             <canvas id="dashboardRiskTrendChart"></canvas>
                         </div>
                     @else
                         <div class="scm-empty-state">
-                            Data historis risiko belum tersedia.
+                            Data historis belum cukup untuk membentuk grafik tren.
                         </div>
                     @endif
                 </div>
@@ -526,6 +554,51 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const countrySearchInput =
+            document.getElementById('dashboardCountrySearch');
+
+        if (countrySearchInput) {
+            const countryOptions =
+                @json($countries->map(fn ($item) => ['id' => $item->id, 'name' => $item->name])->values());
+
+            countrySearchInput.addEventListener('change', function () {
+                const query = countrySearchInput.value.trim().toLowerCase();
+                const country = countryOptions.find(function (item) {
+                    return String(item.name).toLowerCase() === query;
+                });
+
+                if (!country) {
+                    return;
+                }
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('country_id', country.id);
+                window.location.href = url.toString();
+            });
+        }
+
+        const currentDataVersion =
+            Number(@json((int) \Illuminate\Support\Facades\Cache::get('scm:data-version', 0)));
+
+        setInterval(function () {
+            fetch('/api/system-data-version', {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+                .then(function (response) {
+                    return response.ok ? response.json() : null;
+                })
+                .then(function (payload) {
+                    if (!payload || Number(payload.version) <= currentDataVersion) {
+                        return;
+                    }
+
+                    window.location.reload();
+                })
+                .catch(function () {});
+        }, 60000);
+
         const riskTrendCanvas =
             document.getElementById('dashboardRiskTrendChart');
 
@@ -737,6 +810,7 @@
             window.dashboardPortMap = L.map(
                 mapElement,
                 {
+                    preferCanvas: true,
                     scrollWheelZoom: false
                 }
             ).setView([5, 110], 2);
@@ -750,6 +824,9 @@
             ).addTo(window.dashboardPortMap);
 
             const allPorts = @json($allPorts);
+            const renderedMarkersElement =
+                document.getElementById('dashboardRenderedMarkers');
+            let renderedMarkers = 0;
 
             const escapeHtml = function (value) {
                 return String(value ?? '-')
@@ -799,7 +876,14 @@
                         Status: ${escapeHtml(port.status)}<br>
                         Risiko: ${score.toFixed(0)}/100
                     `);
+
+                renderedMarkers += 1;
             });
+
+            if (renderedMarkersElement) {
+                renderedMarkersElement.textContent =
+                    renderedMarkers.toLocaleString('id-ID');
+            }
 
             setTimeout(function () {
                 window.dashboardPortMap.invalidateSize();

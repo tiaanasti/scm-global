@@ -22,3 +22,13 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Codex workspace dan backup
+/.codex/
+
+
+/.codex/
+*.bak
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+

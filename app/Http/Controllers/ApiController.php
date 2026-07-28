@@ -200,4 +200,20 @@ class ApiController extends Controller
             'data' => $summary
         ]);
     }
+
+    public function systemDataVersion()
+    {
+        $version = \Illuminate\Support\Facades\Cache::get('scm:data-version', 0);
+        $lastSyncedAt = DB::table('api_logs')
+            ->where('api_name', 'SCM Global Sync')
+            ->where('status', 'Success')
+            ->latest('requested_at')
+            ->value('requested_at');
+
+        return response()->json([
+            'version' => (int) $version,
+            'last_synced_at' => $lastSyncedAt,
+            'status' => 'success'
+        ]);
+    }
 }

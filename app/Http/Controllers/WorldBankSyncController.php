@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Throwable;
@@ -10,6 +11,22 @@ class WorldBankSyncController extends Controller
 {
     public function sync()
     {
+        $exitCode = Artisan::call('scm:backfill-world-bank', [
+            '--years' => 10,
+            '--all' => true,
+        ]);
+
+        $output = substr(trim(Artisan::output()), 0, 1200);
+
+        return redirect()
+            ->route('admin.index')
+            ->with(
+                $exitCode === 0 ? 'success' : 'error',
+                $exitCode === 0
+                    ? 'Backfill World Bank selesai. ' . $output
+                    : 'Backfill World Bank selesai dengan sebagian kegagalan. ' . $output
+            );
+
         $baseUrl = rtrim(
             config('services.world_bank.base_url', 'https://api.worldbank.org/v2'),
             '/'

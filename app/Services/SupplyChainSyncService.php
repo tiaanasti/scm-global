@@ -133,27 +133,32 @@ class SupplyChainSyncService
         $endpoint = config('services.exchange_rate.latest_url');
         $timeout = (int) config('services.external_api.timeout', 15);
         $result = $this->emptyResult($countries->count());
+        $now = now();
 
-        foreach ($countries as $country) {
-            $now = now();
+        if ($countries->isEmpty()) {
+            return $result;
+        }
 
-            if (!$country->currency_code) {
-                $this->logApi('ExchangeRate-API', $endpoint, 'Failed', 'Kode mata uang untuk ' . $country->name . ' belum tersedia.', $now);
-                $result['failed']++;
-                continue;
+        try {
+            $response = Http::timeout($timeout)->get($endpoint);
+
+            if (!$response->successful()) {
+                $this->logApi('ExchangeRate-API', $endpoint, 'Failed', 'Gagal mengambil data kurs. ' . $this->httpMessage($response->status()), $now);
+                $result['failed'] = $countries->count();
+                return $result;
             }
 
-            try {
-                $response = Http::timeout($timeout)->get($endpoint);
+            $rates = $response->json('rates') ?? [];
 
-                if (!$response->successful()) {
-                    $this->logApi('ExchangeRate-API', $endpoint, 'Failed', 'Gagal mengambil data kurs untuk ' . $country->name . '. ' . $this->httpMessage($response->status()), $now);
+            foreach ($countries as $country) {
+                if (!$country->currency_code) {
+                    $this->logApi('ExchangeRate-API', $endpoint, 'Failed', 'Kode mata uang untuk ' . $country->name . ' belum tersedia.', $now);
                     $result['failed']++;
                     continue;
                 }
 
                 $targetCurrency = strtoupper($country->currency_code);
-                $exchangeRate = $response->json('rates.' . $targetCurrency);
+                $exchangeRate = $rates[$targetCurrency] ?? null;
 
                 if (!$exchangeRate) {
                     $this->logApi('ExchangeRate-API', $endpoint, 'Failed', 'Kode mata uang ' . $targetCurrency . ' tidak ditemukan pada response API.', $now);
@@ -188,12 +193,13 @@ class SupplyChainSyncService
                     'rate_date' => $now->toDateString(),
                 ], $now);
 
-                $this->logApi('ExchangeRate-API', $endpoint, 'Success', 'Data kurs ' . $targetCurrency . ' berhasil diperbarui.', $now);
                 $result['success']++;
-            } catch (Throwable $exception) {
-                $this->logApi('ExchangeRate-API', $endpoint, 'Failed', $country->name . ': ' . $this->exceptionMessage($exception), $now);
-                $result['failed']++;
             }
+
+            $this->logApi('ExchangeRate-API', $endpoint, 'Success', 'Data kurs berhasil diperbarui untuk semua negara.', $now);
+        } catch (Throwable $exception) {
+            $this->logApi('ExchangeRate-API', $endpoint, 'Failed', 'Error: ' . $this->exceptionMessage($exception), $now);
+            $result['failed'] = $countries->count();
         }
 
         return $result;
@@ -242,8 +248,13 @@ class SupplyChainSyncService
                 foreach ($articles as $article) {
                     $title = $article['title'] ?? 'Tanpa judul';
                     $description = $article['description'] ?? '';
-                    $url = $article['url'] ?? null;
-                    $articleUrl = $url ?: 'gnews://' . md5($country->id . $title . ($article['publishedAt'] ?? ''));
+                    $articleUrl = trim((string) ($article['url'] ?? ''));
+
+                    if ($articleUrl === '') {
+                        continue;
+                    }
+
+                    $urlHash = hash('sha256', $articleUrl);
                     $sourceName = $article['source']['name'] ?? 'GNews';
 
                     try {
@@ -278,22 +289,34 @@ class SupplyChainSyncService
                         $sentiment = 'Positive';
                     }
 
-                    DB::table('news_cache')->updateOrInsert(
-                        ['url' => $articleUrl],
-                        [
-                            'country_id' => $country->id,
-                            'title' => $title,
-                            'description' => $description,
-                            'source' => $sourceName,
-                            'category' => 'GNews',
-                            'sentiment' => $sentiment,
-                            'positive_score' => $positiveScore,
-                            'negative_score' => $negativeScore,
-                            'published_at' => $publishedAt,
+                    $payload = [
+                        'country_id' => $country->id,
+                        'title' => $title,
+                        'description' => $description,
+                        'source' => $sourceName,
+                        'url' => $articleUrl,
+                        'url_hash' => $urlHash,
+                        'image_url' => $article['image'] ?? null,
+                        'category' => 'GNews',
+                        'sentiment' => $sentiment,
+                        'positive_score' => $positiveScore,
+                        'negative_score' => $negativeScore,
+                        'published_at' => $publishedAt,
+                        'updated_at' => $now,
+                    ];
+
+                    $existing = DB::table('news_cache')
+                        ->where('url_hash', $urlHash)
+                        ->orWhere('url', $articleUrl)
+                        ->first();
+
+                    if ($existing) {
+                        DB::table('news_cache')->where('id', $existing->id)->update($payload);
+                    } else {
+                        DB::table('news_cache')->insert(array_merge($payload, [
                             'created_at' => $now,
-                            'updated_at' => $now,
-                        ]
-                    );
+                        ]));
+                    }
                 }
 
                 $this->logApi('GNews API', $endpoint, 'Success', 'Berita ' . $country->name . ' berhasil diperbarui. Total artikel: ' . count($articles) . '.', $now);
@@ -418,7 +441,14 @@ class SupplyChainSyncService
     {
         $weather = $this->syncWeather($countries);
         $currency = $this->syncCurrency($countries);
-        $news = $this->syncNews($countries);
+        $newsSync = app(GlobalDataSyncService::class)->syncWatchlistNews($countries);
+        $news = [
+            'countries' => $countries->count(),
+            'success' => $newsSync['inserted'] + $newsSync['duplicates'],
+            'failed' => $newsSync['failed'],
+            'inserted' => $newsSync['inserted'],
+            'duplicates' => $newsSync['duplicates'],
+        ];
         $risk = $this->recalculateRisks($countries);
 
         return [

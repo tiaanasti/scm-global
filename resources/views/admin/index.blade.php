@@ -103,6 +103,36 @@
         </div>
     </div>
 
+    {{-- BACKFILL BERITA GLOBAL --}}
+    <div class="card-clean mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <div class="section-title mb-1">
+                    Backfill Berita Global
+                </div>
+
+                <div class="metric-sub">
+                    Ambil berita global GNews untuk query supply chain,
+                    logistics, shipping, trade, freight, port congestion,
+                    export, dan import.
+                </div>
+            </div>
+
+            <form
+                action="{{ route('admin.news.backfill_global') }}"
+                method="POST"
+                onsubmit="return confirm('Backfill berita global dari GNews sekarang?')"
+            >
+                @csrf
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-newspaper me-1"></i>
+                    Backfill Berita Global
+                </button>
+            </form>
+        </div>
+    </div>
+
     {{-- WORLD BANK SYNC --}}
     <div class="card-clean mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -1387,6 +1417,20 @@
                     >
                 </div>
 
+                <div class="col-lg-5 col-md-6">
+                    <label class="form-label">
+                        Link Sumber
+                    </label>
+
+                    <input
+                        type="url"
+                        name="source_url"
+                        class="form-control"
+                        value="{{ old('source_url') }}"
+                        placeholder="https://contoh.com/artikel-sumber"
+                    >
+                </div>
+
                 <div class="col-lg-3 col-md-6">
                     <label class="form-label">
                         Status
@@ -1482,6 +1526,20 @@
                 <div class="news-desc mb-3">
                     Penulis: {{ $article->author_name ?? 'Admin' }}
                 </div>
+
+                @if (!empty($article->source_url))
+                    <div class="news-desc mb-3">
+                        <a
+                            href="{{ $article->source_url }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-decoration-none"
+                        >
+                            <i class="bi bi-box-arrow-up-right me-1"></i>
+                            Buka sumber artikel
+                        </a>
+                    </div>
+                @endif
 
                 <div class="d-flex gap-2 flex-wrap">
                     <a

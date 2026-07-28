@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use App\Services\GlobalDataSyncService;
 use App\Services\SupplyChainSyncService;
 
 class DashboardController extends Controller
@@ -55,8 +56,20 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $totalPortsDatabase = DB::table('ports')->count();
+        $validCoordinatePortsCount = DB::table('ports')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->whereBetween('latitude', [-90, 90])
+            ->whereBetween('longitude', [-180, 180])
+            ->count();
+
         $allPorts = DB::table('ports')
-            ->join('countries', 'ports.country_id', '=', 'countries.id')
+            ->leftJoin('countries', 'ports.country_id', '=', 'countries.id')
+            ->whereNotNull('ports.latitude')
+            ->whereNotNull('ports.longitude')
+            ->whereBetween('ports.latitude', [-90, 90])
+            ->whereBetween('ports.longitude', [-180, 180])
             ->select(
                 'ports.id',
                 'ports.name',
@@ -65,9 +78,15 @@ class DashboardController extends Controller
                 'ports.longitude',
                 'ports.status',
                 'ports.port_risk_score',
-                'countries.name as country_name'
+                DB::raw('COALESCE(countries.name, ports.country_name) as country_name')
             )
             ->get();
+
+        $dashboardPortStats = [
+            'total_database' => $totalPortsDatabase,
+            'valid_coordinates' => $validCoordinatePortsCount,
+            'sent_to_view' => $allPorts->count(),
+        ];
 
         $watchedCountriesCount = DB::table('watchlists')
             ->distinct()
@@ -154,7 +173,8 @@ class DashboardController extends Controller
                 'title' => $item->title,
                 'description' => $item->description ?: ($item->source ?? 'Berita terbaru tersedia.'),
                 'time' => $item->published_at,
-                'url' => route('news.index', ['country_id' => $item->country_id]),
+                'url' => $item->url,
+                'external' => !empty($item->url),
                 'icon' => 'bi-newspaper',
                 'level' => $item->sentiment === 'Negative' ? 'high' : ($item->sentiment === 'Positive' ? 'low' : 'medium'),
             ]);
@@ -168,6 +188,7 @@ class DashboardController extends Controller
                 'description' => 'Skor risiko terbaru ' . number_format((float) $topRisk->total_score, 0) . '/100 dengan status ' . ($topRisk->risk_level ?? '-'),
                 'time' => $topRisk->updated_at,
                 'url' => route('risks.index', ['country_id' => $topRisk->country_id]),
+                'external' => false,
                 'icon' => 'bi-shield-exclamation',
                 'level' => 'high',
             ]);
@@ -185,6 +206,7 @@ class DashboardController extends Controller
                 'description' => 'Status ' . ($portAlert->status ?? '-') . ' dengan skor risiko ' . number_format((float) ($portAlert->port_risk_score ?? 0), 0) . '/100.',
                 'time' => $portAlert->updated_at,
                 'url' => route('ports.index', ['country_id' => $portAlert->country_id]),
+                'external' => false,
                 'icon' => 'bi-anchor',
                 'level' => ($portAlert->status ?? '') === 'Waspada' ? 'medium' : 'high',
             ]);
@@ -197,6 +219,7 @@ class DashboardController extends Controller
                 'description' => ($weather->weather_status ?? 'Cuaca terpantau') . ', skor cuaca ' . number_format((float) $weather->weather_risk_score, 0) . '/100.',
                 'time' => $weather->reported_at,
                 'url' => route('weather.index'),
+                'external' => false,
                 'icon' => 'bi-cloud-lightning-rain',
                 'level' => 'medium',
             ]);
@@ -230,6 +253,7 @@ class DashboardController extends Controller
             'news',
             'ports',
             'allPorts',
+            'dashboardPortStats',
             'summary',
             'riskTrend',
             'riskRanking',
@@ -680,6 +704,7 @@ class DashboardController extends Controller
             'news_cache.title',
             'news_cache.description',
             'news_cache.source',
+            'news_cache.url',
             'news_cache.category',
             'news_cache.sentiment',
             'news_cache.positive_score',
@@ -1068,6 +1093,7 @@ public function watchlists(Request $request)
                 'articles.id',
                 'articles.title',
                 'articles.category',
+                'articles.source_url',
                 'articles.status',
                 'articles.created_at',
                 'users.name as author_name'
@@ -1078,6 +1104,7 @@ public function watchlists(Request $request)
             $articlesQuery->where(function ($q) use ($articleSearch) {
                 $q->where('articles.title', 'like', "%{$articleSearch}%")
                   ->orWhere('articles.category', 'like', "%{$articleSearch}%")
+                  ->orWhere('articles.source_url', 'like', "%{$articleSearch}%")
                   ->orWhere('articles.status', 'like', "%{$articleSearch}%");
             });
         }
@@ -1288,17 +1315,34 @@ public function watchlists(Request $request)
 
     public function reports()
 {
+    $latestRiskSub = DB::table('risk_scores as r1')
+        ->select('r1.country_id', 'r1.id as latest_id')
+        ->whereRaw('r1.id = (
+            SELECT r2.id FROM risk_scores r2
+            WHERE r2.country_id = r1.country_id
+            ORDER BY r2.score_date DESC, r2.created_at DESC, r2.id DESC
+            LIMIT 1
+        )');
+
+    $latestRiskRows = DB::table('risk_scores')
+        ->joinSub($latestRiskSub, 'latest_risk', function ($join) {
+            $join->on('risk_scores.id', '=', 'latest_risk.latest_id');
+        });
+
     $summary = [
         'countries_count' => DB::table('countries')->count(),
         'ports_count' => DB::table('ports')->count(),
         'news_count' => DB::table('news_cache')->count(),
         'watchlists_count' => DB::table('watchlists')->count(),
-        'high_risk_count' => DB::table('risk_scores')->where('total_score', '>=', 60)->count(),
-        'medium_risk_count' => DB::table('risk_scores')->whereBetween('total_score', [35, 59])->count(),
-        'low_risk_count' => DB::table('risk_scores')->where('total_score', '<', 35)->count(),
+        'high_risk_count' => (clone $latestRiskRows)->where('risk_scores.total_score', '>=', 60)->count(),
+        'medium_risk_count' => (clone $latestRiskRows)->whereBetween('risk_scores.total_score', [35, 59])->count(),
+        'low_risk_count' => (clone $latestRiskRows)->where('risk_scores.total_score', '<', 35)->count(),
     ];
 
     $riskRows = DB::table('risk_scores')
+        ->joinSub($latestRiskSub, 'latest_risk', function ($join) {
+            $join->on('risk_scores.id', '=', 'latest_risk.latest_id');
+        })
         ->join('countries', 'risk_scores.country_id', '=', 'countries.id')
         ->select(
             'countries.name as country_name',
@@ -1865,6 +1909,7 @@ public function watchlists(Request $request)
         $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'nullable|string|max:255',
+            'source_url' => 'nullable|url|max:2048',
             'status' => 'required|string|in:Draft,Published',
             'content' => 'required|string',
         ]);
@@ -1874,6 +1919,7 @@ public function watchlists(Request $request)
                 'user_id' => Auth::id(),
                 'title' => $request->title,
                 'category' => $request->category,
+                'source_url' => $request->source_url,
                 'status' => $request->status,
                 'content' => $request->content,
                 'created_at' => now(),
@@ -1947,6 +1993,7 @@ public function watchlists(Request $request)
         $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'nullable|string|max:255',
+            'source_url' => 'nullable|url|max:2048',
             'status' => 'required|string|in:Draft,Published',
             'content' => 'required|string',
         ]);
@@ -1956,6 +2003,7 @@ public function watchlists(Request $request)
             ->update([
                 'title' => $request->title,
                 'category' => $request->category,
+                'source_url' => $request->source_url,
                 'status' => $request->status,
                 'content' => $request->content,
                 'updated_at' => now(),
@@ -2601,15 +2649,14 @@ public function watchlists(Request $request)
 
         return DB::table('currency_rates')
             ->where('country_id', $countryId)
-            ->orderByDesc('rate_date')
-            ->orderByDesc('id')
-            ->limit($limit)
+            ->whereNotNull('rate_date')
+            ->orderBy('rate_date')
+            ->orderBy('id')
             ->get(['rate_date', 'exchange_rate'])
-            ->sortBy('rate_date')
             ->values();
     }
 
-    private function riskTrendForCountry($countryId, int $limit = 10)
+    private function riskTrendForCountry($countryId, int $limit = 30)
     {
         if (!$countryId) {
             return collect();
@@ -2620,8 +2667,11 @@ public function watchlists(Request $request)
             ->orderByDesc('score_date')
             ->orderByDesc('id')
             ->limit($limit)
-            ->get(['score_date', 'total_score'])
-            ->sortBy('score_date')
+            ->get(['score_date', 'total_score', 'id'])
+            ->sortBy([
+                ['score_date', 'asc'],
+                ['id', 'asc'],
+            ])
             ->values();
     }
 
@@ -2697,6 +2747,25 @@ public function watchlists(Request $request)
 
     public function syncCountriesFromApi()
     {
+        $result = app(GlobalDataSyncService::class)->syncCountries();
+
+        return redirect()
+            ->route('admin.index')
+            ->with(
+                $result['failed'] > 0 ? 'error' : 'success',
+                'Sinkronisasi negara selesai. Sumber: '
+                . $result['sourceTotal']
+                . ', negara baru: '
+                . $result['inserted']
+                . ', diperbarui: '
+                . $result['updated']
+                . ', dilewati: '
+                . $result['skipped']
+                . ', gagal: '
+                . $result['failed']
+                . '.'
+            );
+
         $apiKey = config('services.rest_countries.api_key');
         $baseUrl = config(
             'services.rest_countries.base_url',
@@ -3198,5 +3267,25 @@ public function watchlists(Request $request)
                 ->route('admin.index')
                 ->with('error', 'Sinkronisasi negara gagal: ' . $exception->getMessage());
         }
+    }
+
+    public function backfillGlobalNews()
+    {
+        $result = app(GlobalDataSyncService::class)->backfillGlobalNews(3);
+
+        return redirect()
+            ->route('admin.index')
+            ->with(
+                $result['failed'] > 0 ? 'error' : 'success',
+                'Backfill berita global selesai. Diambil: '
+                . $result['fetched']
+                . ', berita baru: '
+                . $result['inserted']
+                . ', duplikat: '
+                . $result['duplicates']
+                . ', gagal: '
+                . $result['failed']
+                . '.'
+            );
     }
 }

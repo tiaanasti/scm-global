@@ -55,66 +55,10 @@
 
 <body>
     <div class="app-shell">
-
-        {{-- SIDEBAR DESKTOP --}}
-        <aside
-            class="sidebar sidebar-desktop"
-            aria-label="Navigasi utama"
-        >
-            @include('partials.sidebar')
-        </aside>
-
-        {{-- SIDEBAR MOBILE --}}
-        <div
-            class="offcanvas offcanvas-start scm-offcanvas"
-            tabindex="-1"
-            id="mobileSidebar"
-            aria-labelledby="mobileSidebarLabel"
-        >
-            <div class="offcanvas-header">
-                <h5
-                    class="offcanvas-title text-white"
-                    id="mobileSidebarLabel"
-                >
-                    Menu
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close btn-close-white"
-                    data-bs-dismiss="offcanvas"
-                    aria-label="Tutup menu"
-                ></button>
-            </div>
-
-            <div class="offcanvas-body">
-                <div class="sidebar">
-                    @include('partials.sidebar')
-                </div>
-            </div>
-        </div>
+        @include('partials.navbar')
 
         {{-- AREA UTAMA --}}
         <main class="main" id="mainContent">
-
-            {{-- HEADER MOBILE --}}
-            <header class="mobile-header">
-                <button
-                    class="btn btn-outline-scm"
-                    type="button"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#mobileSidebar"
-                    aria-controls="mobileSidebar"
-                    aria-label="Buka menu"
-                >
-                    <i class="bi bi-list fs-5"></i>
-                </button>
-
-                <div class="mobile-brand">
-                    Supply Chain Risk Intelligence
-                </div>
-            </header>
-
             {{-- ISI HALAMAN --}}
             @yield('content')
         </main>
