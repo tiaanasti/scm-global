@@ -39,75 +39,9 @@
         </div>
 
         <div class="scm-topbar-tools">
-            <div class="scm-search">
-                <i class="bi bi-search"></i>
-
-                <input
-                    type="search"
-                    id="dashboardCountrySearch"
-                    class="form-control"
-                    placeholder="Cari negara yang tersedia..."
-                    aria-label="Cari negara"
-                    list="dashboardCountrySearchList"
-                >
-
-                <datalist id="dashboardCountrySearchList">
-                    @foreach ($countries as $item)
-                        <option
-                            value="{{ $item->name }}"
-                            data-country-id="{{ $item->id }}"
-                        ></option>
-                    @endforeach
-                </datalist>
-            </div>
-
             <span class="risk-badge {{ $freshnessClass }}">
                 {{ $dataFreshness }}
             </span>
-
-            <div class="dropdown">
-                <button
-                    class="profile-chip border-0"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                >
-                    <span class="user-avatar">
-                        <i class="bi bi-person-fill"></i>
-                    </span>
-
-                    <span class="text-start">
-                        <span class="d-block fw-bold">
-                            {{ auth()->user()->name }}
-                        </span>
-
-                        <small class="scm-muted">
-                            {{ ucfirst(auth()->user()->role ?? 'user') }}
-                        </small>
-                    </span>
-
-                    <i class="bi bi-chevron-down scm-muted"></i>
-                </button>
-
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <form
-                            action="{{ route('logout') }}"
-                            method="POST"
-                        >
-                            @csrf
-
-                            <button
-                                type="submit"
-                                class="dropdown-item"
-                            >
-                                <i class="bi bi-box-arrow-right me-2"></i>
-                                Keluar
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
         </div>
     </div>
 
@@ -554,29 +488,6 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const countrySearchInput =
-            document.getElementById('dashboardCountrySearch');
-
-        if (countrySearchInput) {
-            const countryOptions =
-                @json($countries->map(fn ($item) => ['id' => $item->id, 'name' => $item->name])->values());
-
-            countrySearchInput.addEventListener('change', function () {
-                const query = countrySearchInput.value.trim().toLowerCase();
-                const country = countryOptions.find(function (item) {
-                    return String(item.name).toLowerCase() === query;
-                });
-
-                if (!country) {
-                    return;
-                }
-
-                const url = new URL(window.location.href);
-                url.searchParams.set('country_id', country.id);
-                window.location.href = url.toString();
-            });
-        }
-
         const currentDataVersion =
             Number(@json((int) \Illuminate\Support\Facades\Cache::get('scm:data-version', 0)));
 
