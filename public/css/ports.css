@@ -193,4 +193,9 @@
         width: 100%;
         min-width: 0;
     }
+    /* Memperbaiki SVG Leaflet yang tertimpa CSS global */
+.port-page #trackingMap .leaflet-overlay-pane svg,
+.port-page #trackingMap svg.leaflet-zoom-animated {
+    max-width: none !important;
+}
 }
