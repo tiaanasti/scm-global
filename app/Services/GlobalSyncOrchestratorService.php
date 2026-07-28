@@ -109,25 +109,52 @@ class GlobalSyncOrchestratorService
                 $updatedCountryIds = array_merge($updatedCountryIds, $weatherCountries->pluck('id')->toArray());
             }
 
-            // 3. Currency Sync (TTL: 10 minutes)
-            $lastCurrencySync = Cache::get('scm:currency-last-sync-time');
-            if (!$lastCurrencySync || now()->diffInMinutes($lastCurrencySync) >= 10) {
-                $currencyResult = $this->supplyChainSyncService->syncCurrency();
-                $summary['currency']['synced'] = $currencyResult['success'];
-                $summary['currency']['failed'] = $currencyResult['failed'];
-                Cache::put('scm:currency-last-sync-time', now(), 1440);
+            // 3. Currency Sync seluruh negara (TTL: 10 menit)
+$lastCurrencySync = Cache::get('scm:currency-last-sync-time');
 
-                if ($currencyResult['success'] > 0) {
-                    ScmCacheService::invalidateGlobalData();
-                }
+if (
+    !$lastCurrencySync ||
+    now()->diffInMinutes($lastCurrencySync) >= 10
+) {
+    /*
+     * Satu request Exchange Rate API sudah berisi seluruh mata uang.
+     * Karena itu semua negara yang memiliki kode mata uang dapat
+     * diperbarui dalam satu siklus.
+     */
+    $currencyCountries = DB::table('countries')
+        ->whereNotNull('currency_code')
+        ->where('currency_code', '<>', '')
+        ->orderBy('id')
+        ->get();
 
-                // Currency affects all monitored countries
-                $monitoredIds = $this->supplyChainSyncService->monitoredCountries()->pluck('id')->toArray();
-                $updatedCountryIds = array_merge($updatedCountryIds, $monitoredIds);
-            } else {
-                $summary['currency']['skipped'] = true;
-            }
+    $currencyResult =
+        $this->supplyChainSyncService->syncCurrency(
+            $currencyCountries
+        );
 
+    $summary['currency']['synced'] =
+        $currencyResult['success'];
+
+    $summary['currency']['failed'] =
+        $currencyResult['failed'];
+
+    Cache::put(
+        'scm:currency-last-sync-time',
+        now(),
+        1440
+    );
+
+    if ($currencyResult['success'] > 0) {
+        ScmCacheService::invalidateGlobalData();
+    }
+
+    $updatedCountryIds = array_merge(
+        $updatedCountryIds,
+        $currencyCountries->pluck('id')->toArray()
+    );
+} else {
+    $summary['currency']['skipped'] = true;
+}
             // 4. News Sync (TTL: 30 minutes, rotating global & watchlist)
             $lastNewsSync = Cache::get('scm:news-last-sync-time');
             if (!$lastNewsSync || now()->diffInMinutes($lastNewsSync) >= 30) {
