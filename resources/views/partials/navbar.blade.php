@@ -77,10 +77,7 @@
         ];
     }
 
-    $allMenu = array_merge(
-        $primaryMenu,
-        $secondaryMenu
-    );
+    $allMenu = array_merge($primaryMenu, $secondaryMenu);
 
     $hasSecondaryActive = collect($secondaryMenu)
         ->contains(function ($item) {
@@ -88,23 +85,17 @@
         });
 @endphp
 
-{{-- NAVBAR UTAMA --}}
 <nav
     class="scm-navbar navbar navbar-expand-lg"
     aria-label="Navigasi utama"
 >
     <div class="container-fluid scm-navbar-container">
-
-        {{-- BRAND --}}
         <a
             href="{{ route('dashboard') }}"
             class="scm-navbar-brand"
             aria-label="Kembali ke Dashboard"
         >
-            <span
-                class="scm-navbar-brand-icon"
-                aria-hidden="true"
-            >
+            <span class="scm-navbar-brand-icon" aria-hidden="true">
                 <i class="bi bi-box-seam"></i>
             </span>
 
@@ -114,7 +105,6 @@
             </span>
         </a>
 
-        {{-- MENU DESKTOP --}}
         <div
             class="scm-navbar-menu d-none d-lg-flex"
             role="menubar"
@@ -122,11 +112,11 @@
             @foreach ($primaryMenu as $item)
                 <a
                     href="{{ route($item['route']) }}"
-                    class="scm-navbar-link
-                        {{ request()->routeIs($item['active'])
+                    class="scm-navbar-link {{
+                        request()->routeIs($item['active'])
                             ? 'active'
                             : ''
-                        }}"
+                    }}"
                     @if (request()->routeIs($item['active']))
                         aria-current="page"
                     @endif
@@ -136,21 +126,15 @@
                         aria-hidden="true"
                     ></i>
 
-                    <span>
-                        {{ $item['label'] }}
-                    </span>
+                    <span>{{ $item['label'] }}</span>
                 </a>
             @endforeach
 
-            {{-- DROPDOWN MENU LAINNYA --}}
             <div class="dropdown">
                 <button
                     class="scm-navbar-link
                         scm-navbar-dropdown-toggle
-                        {{ $hasSecondaryActive
-                            ? 'active'
-                            : ''
-                        }}"
+                        {{ $hasSecondaryActive ? 'active' : '' }}"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
@@ -168,31 +152,22 @@
                     ></i>
                 </button>
 
-                <ul
-                    class="dropdown-menu
-                        scm-navbar-dropdown"
-                >
+                <ul class="dropdown-menu scm-navbar-dropdown">
                     @foreach ($secondaryMenu as $item)
                         <li>
                             <a
                                 href="{{ route($item['route']) }}"
-                                class="dropdown-item
-                                    {{ request()->routeIs(
-                                        $item['active']
-                                    )
+                                class="dropdown-item {{
+                                    request()->routeIs($item['active'])
                                         ? 'active'
                                         : ''
-                                    }}"
-                                @if (request()->routeIs(
-                                    $item['active']
-                                ))
+                                }}"
+                                @if (request()->routeIs($item['active']))
                                     aria-current="page"
                                 @endif
                             >
                                 <i
-                                    class="bi
-                                        {{ $item['icon'] }}
-                                        me-2"
+                                    class="bi {{ $item['icon'] }} me-2"
                                     aria-hidden="true"
                                 ></i>
 
@@ -204,10 +179,7 @@
             </div>
         </div>
 
-        {{-- BAGIAN AKUN DAN TOMBOL MOBILE --}}
         <div class="scm-navbar-actions">
-
-            {{-- AKUN DESKTOP --}}
             @auth
                 <div class="dropdown d-none d-lg-block">
                     <button
@@ -215,25 +187,17 @@
                         type="button"
                         data-bs-toggle="dropdown"
                         aria-expanded="false"
-                        aria-label="Buka menu akun"
+                        aria-label="Menu akun"
                     >
-                        <span
-                            class="user-avatar"
-                            aria-hidden="true"
-                        >
+                        <span class="user-avatar" aria-hidden="true">
                             <i class="bi bi-person-fill"></i>
                         </span>
 
                         <span class="scm-account-copy">
-                            <span>
-                                {{ auth()->user()->name }}
-                            </span>
+                            <span>{{ auth()->user()->name }}</span>
 
                             <small>
-                                {{ ucfirst(
-                                    auth()->user()->role
-                                        ?? 'user'
-                                ) }}
+                                {{ ucfirst(auth()->user()->role ?? 'user') }}
                             </small>
                         </span>
 
@@ -274,7 +238,6 @@
                 </div>
             @endauth
 
-            {{-- TOMBOL MENU MOBILE --}}
             <button
                 class="scm-navbar-toggler d-lg-none"
                 type="button"
@@ -284,37 +247,26 @@
                 aria-expanded="false"
                 aria-label="Buka menu navigasi"
             >
-                <i
-                    class="bi bi-list"
-                    aria-hidden="true"
-                ></i>
+                <i class="bi bi-list" aria-hidden="true"></i>
             </button>
         </div>
     </div>
 </nav>
 
-{{-- OFFCANVAS MOBILE --}}
 <div
-    class="offcanvas
-        offcanvas-end
-        scm-mobile-nav"
+    class="offcanvas offcanvas-end scm-mobile-nav"
     tabindex="-1"
     id="scmMobileNav"
     aria-labelledby="scmMobileNavLabel"
 >
-    {{-- HEADER MOBILE --}}
     <div class="offcanvas-header">
         <a
             href="{{ route('dashboard') }}"
-            class="scm-mobile-brand
-                text-decoration-none"
+            class="scm-mobile-brand text-decoration-none"
             id="scmMobileNavLabel"
             aria-label="Kembali ke Dashboard"
         >
-            <span
-                class="scm-navbar-brand-icon"
-                aria-hidden="true"
-            >
+            <span class="scm-navbar-brand-icon" aria-hidden="true">
                 <i class="bi bi-box-seam"></i>
             </span>
 
@@ -332,7 +284,6 @@
         ></button>
     </div>
 
-    {{-- ISI MENU MOBILE --}}
     <div class="offcanvas-body">
         <nav
             class="scm-mobile-menu"
@@ -341,17 +292,12 @@
             @foreach ($allMenu as $item)
                 <a
                     href="{{ route($item['route']) }}"
-                    class="scm-mobile-link
-                        js-scm-mobile-link
-                        {{ request()->routeIs(
-                            $item['active']
-                        )
+                    class="scm-mobile-link {{
+                        request()->routeIs($item['active'])
                             ? 'active'
                             : ''
-                        }}"
-                    @if (request()->routeIs(
-                        $item['active']
-                    ))
+                    }}"
+                    @if (request()->routeIs($item['active']))
                         aria-current="page"
                     @endif
                 >
@@ -360,25 +306,15 @@
                         aria-hidden="true"
                     ></i>
 
-                    <span>
-                        {{ $item['label'] }}
-                    </span>
+                    <span>{{ $item['label'] }}</span>
                 </a>
             @endforeach
         </nav>
 
-        {{-- INFORMASI AKUN MOBILE --}}
         @auth
             <div class="scm-mobile-account">
-                <div
-                    class="d-flex
-                        align-items-center
-                        gap-2"
-                >
-                    <span
-                        class="user-avatar"
-                        aria-hidden="true"
-                    >
+                <div class="d-flex align-items-center gap-2">
+                    <span class="user-avatar" aria-hidden="true">
                         <i class="bi bi-person-fill"></i>
                     </span>
 
@@ -388,10 +324,7 @@
                         </strong>
 
                         <small>
-                            {{ ucfirst(
-                                auth()->user()->role
-                                    ?? 'user'
-                            ) }}
+                            {{ ucfirst(auth()->user()->role ?? 'user') }}
                         </small>
                     </span>
                 </div>
@@ -405,14 +338,10 @@
 
                     <button
                         type="submit"
-                        class="btn
-                            btn-outline-light
-                            w-100"
+                        class="btn btn-outline-light w-100"
                     >
                         <i
-                            class="bi
-                                bi-box-arrow-right
-                                me-1"
+                            class="bi bi-box-arrow-right me-1"
                             aria-hidden="true"
                         ></i>
 
@@ -423,198 +352,3 @@
         @endauth
     </div>
 </div>
-
-{{-- JAVASCRIPT KHUSUS NAVIGASI MOBILE --}}
-@once
-    @push('scripts')
-        <script>
-            document.addEventListener(
-                'DOMContentLoaded',
-                function () {
-                    const mobileNav =
-                        document.getElementById(
-                            'scmMobileNav'
-                        );
-
-                    if (
-                        !mobileNav
-                        || typeof bootstrap === 'undefined'
-                    ) {
-                        return;
-                    }
-
-                    const mobileLinks =
-                        mobileNav.querySelectorAll(
-                            'a.js-scm-mobile-link[href]'
-                        );
-
-                    mobileLinks.forEach(function (link) {
-                        link.addEventListener(
-                            'click',
-                            function (event) {
-                                const rawHref =
-                                    this.getAttribute(
-                                        'href'
-                                    );
-
-                                const destination =
-                                    this.href;
-
-                                if (
-                                    !rawHref
-                                    || rawHref === '#'
-                                    || rawHref.startsWith(
-                                        'javascript:'
-                                    )
-                                ) {
-                                    event.preventDefault();
-                                    return;
-                                }
-
-                                /*
-                                 * Biarkan browser menangani klik
-                                 * untuk membuka tab baru.
-                                 */
-                                if (
-                                    event.ctrlKey
-                                    || event.metaKey
-                                    || event.shiftKey
-                                    || event.altKey
-                                    || event.button !== 0
-                                ) {
-                                    return;
-                                }
-
-                                event.preventDefault();
-                                event.stopPropagation();
-
-                                const currentUrl =
-                                    new URL(
-                                        window.location.href
-                                    );
-
-                                const targetUrl =
-                                    new URL(destination);
-
-                                const currentLocation =
-                                    currentUrl.origin
-                                    + currentUrl.pathname
-                                    + currentUrl.search;
-
-                                const targetLocation =
-                                    targetUrl.origin
-                                    + targetUrl.pathname
-                                    + targetUrl.search;
-
-                                const offcanvas =
-                                    bootstrap
-                                        .Offcanvas
-                                        .getOrCreateInstance(
-                                            mobileNav
-                                        );
-
-                                /*
-                                 * Jika menu yang ditekan adalah
-                                 * halaman yang sedang dibuka,
-                                 * cukup tutup offcanvas.
-                                 */
-                                if (
-                                    currentLocation
-                                    === targetLocation
-                                ) {
-                                    offcanvas.hide();
-                                    return;
-                                }
-
-                                let navigationStarted =
-                                    false;
-
-                                function navigate() {
-                                    if (
-                                        navigationStarted
-                                    ) {
-                                        return;
-                                    }
-
-                                    navigationStarted = true;
-
-                                    window.location.assign(
-                                        destination
-                                    );
-                                }
-
-                                /*
-                                 * Pindah halaman setelah
-                                 * offcanvas tertutup.
-                                 */
-                                mobileNav.addEventListener(
-                                    'hidden.bs.offcanvas',
-                                    navigate,
-                                    {
-                                        once: true
-                                    }
-                                );
-
-                                offcanvas.hide();
-
-                                /*
-                                 * Fallback untuk browser HP
-                                 * jika event Bootstrap gagal.
-                                 */
-                                window.setTimeout(
-                                    navigate,
-                                    500
-                                );
-                            }
-                        );
-                    });
-
-                    /*
-                     * Membersihkan backdrop apabila
-                     * pengguna kembali dengan tombol
-                     * back browser.
-                     */
-                    window.addEventListener(
-                        'pageshow',
-                        function () {
-                            document
-                                .querySelectorAll(
-                                    '.offcanvas-backdrop'
-                                )
-                                .forEach(
-                                    function (backdrop) {
-                                        backdrop.remove();
-                                    }
-                                );
-
-                            mobileNav.classList.remove(
-                                'show',
-                                'showing',
-                                'hiding'
-                            );
-
-                            mobileNav.removeAttribute(
-                                'aria-modal'
-                            );
-
-                            mobileNav.setAttribute(
-                                'aria-hidden',
-                                'true'
-                            );
-
-                            document.body.style
-                                .removeProperty(
-                                    'overflow'
-                                );
-
-                            document.body.style
-                                .removeProperty(
-                                    'padding-right'
-                                );
-                        }
-                    );
-                }
-            );
-        </script>
-    @endpush
-@endonce
