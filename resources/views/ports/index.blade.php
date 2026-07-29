@@ -60,24 +60,22 @@
         }
 
         /*
-         * Pengaman untuk renderer SVG khusus rute yang dibuat di port.js.
-         * Tidak memengaruhi marker, popup, tabel, filter, atau tracking.
+         * Perbaikan khusus Leaflet:
+         * - mencegah SVG peta dibatasi CSS global;
+         * - memastikan polyline rute tampil putus-putus;
+         * - tidak mengubah marker, tabel, filter, maupun fitur tracking lain.
          */
-        .port-page #trackingMap .leaflet-route-pane svg {
+        .port-page #trackingMap .leaflet-overlay-pane svg,
+        .port-page #trackingMap svg.leaflet-zoom-animated {
             max-width: none !important;
             max-height: none !important;
-            overflow: visible !important;
-            pointer-events: none !important;
         }
 
-        .port-page #trackingMap path.scm-port-route-line {
-            stroke: #ef4444 !important;
-            stroke-width: 4px !important;
+        .port-page #trackingMap path.scm-port-route-line,
+        .port-page #trackingMap .leaflet-overlay-pane path[fill="none"] {
             stroke-dasharray: 12 10 !important;
             stroke-linecap: round !important;
             stroke-linejoin: round !important;
-            opacity: 1 !important;
-            fill: none !important;
         }
     </style>
 @endpush
@@ -637,6 +635,65 @@
     <script>
         window.portTrackingData =
             {{ Illuminate\Support\Js::from($ports) }};
+    </script>
+
+    <script>
+        /*
+         * Patch aman untuk polyline Leaflet pada halaman Pelabuhan.
+         * port.js tetap menjadi pengendali utama peta, pilihan pelabuhan,
+         * marker, jarak, reset, swap, dan animasi tracking.
+         */
+        (function () {
+            function patchLeafletPolyline() {
+                if (
+                    !window.L ||
+                    typeof window.L.polyline !== 'function' ||
+                    window.L.__scmPortDashedRoutePatched
+                ) {
+                    return false;
+                }
+
+                const originalPolyline = window.L.polyline.bind(window.L);
+
+                window.L.polyline = function (latlngs, options) {
+                    const routeOptions = Object.assign({}, options || {});
+
+                    routeOptions.color =
+                        routeOptions.color || '#e76f51';
+
+                    routeOptions.weight =
+                        routeOptions.weight || 4;
+
+                    routeOptions.opacity =
+                        routeOptions.opacity ?? 0.95;
+
+                    routeOptions.dashArray = '12 10';
+                    routeOptions.lineCap = 'round';
+                    routeOptions.lineJoin = 'round';
+
+                    routeOptions.className = [
+                        routeOptions.className,
+                        'scm-port-route-line'
+                    ]
+                        .filter(Boolean)
+                        .join(' ');
+
+                    return originalPolyline(latlngs, routeOptions);
+                };
+
+                window.L.__scmPortDashedRoutePatched = true;
+
+                return true;
+            }
+
+            if (!patchLeafletPolyline()) {
+                document.addEventListener(
+                    'DOMContentLoaded',
+                    patchLeafletPolyline,
+                    { once: true }
+                );
+            }
+        })();
     </script>
 
     <script
