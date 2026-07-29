@@ -84,11 +84,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const map = L.map('trackingMap', {
         zoomControl: true,
-
-        /*
-         * Tetap memakai Canvas sebagai renderer utama agar ribuan
-         * circleMarker pelabuhan tetap ringan.
-         */
         preferCanvas: true,
         worldCopyJump: true
     }).setView([10, 0], 2);
@@ -109,39 +104,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const allPortsLayer = L.layerGroup().addTo(map);
     const routeLayer = L.layerGroup().addTo(map);
     const allPortMarkers = [];
-
-    /*
-     * Renderer SVG khusus garis rute.
-     *
-     * Map utama tetap menggunakan Canvas untuk 3.883 marker agar ringan,
-     * tetapi garis rute dipaksa memakai SVG. Ini penting karena pada
-     * tampilan sebelumnya marker HTML muncul, sedangkan seluruh layer
-     * vector Canvas (circleMarker dan polyline) tidak terlihat.
-     */
-    if (!map.getPane('routePane')) {
-        map.createPane('routePane');
-    }
-
-    const routePane = map.getPane('routePane');
-
-    routePane.style.zIndex = '450';
-    routePane.style.pointerEvents = 'none';
-
-    const routeRenderer = L.svg({
-        pane: 'routePane',
-        padding: 0.5
-    });
-
-    routeRenderer.addTo(map);
-
-    const routeRendererContainer = routeRenderer.getContainer();
-
-    if (routeRendererContainer) {
-        routeRendererContainer.style.maxWidth = 'none';
-        routeRendererContainer.style.maxHeight = 'none';
-        routeRendererContainer.style.overflow = 'visible';
-        routeRendererContainer.style.pointerEvents = 'none';
-    }
 
     function getStatusColor(status) {
         if (status === 'Aman' || status === 'Normal') {
@@ -333,26 +295,13 @@ document.addEventListener('DOMContentLoaded', function () {
         routeLine = L.polyline(
             [originLatLng, destinationLatLng],
             {
-                /*
-                 * Renderer SVG eksplisit membuat garis tetap terlihat
-                 * walaupun map memakai preferCanvas untuk marker massal.
-                 */
-                renderer: routeRenderer,
-                pane: 'routePane',
-                className: 'scm-port-route-line',
                 color: '#ef4444',
-                weight: 4,
-                opacity: 1,
-                dashArray: '12 10',
-                dashOffset: '0',
-                lineCap: 'round',
-                lineJoin: 'round',
-                interactive: false,
-                bubblingMouseEvents: false
+                weight: 3,
+                opacity: 0.85,
+                dashArray: '7, 9',
+                lineCap: 'round'
             }
         ).addTo(routeLayer);
-
-        routeLine.bringToFront();
 
         const bounds = L.latLngBounds([
             originLatLng,
